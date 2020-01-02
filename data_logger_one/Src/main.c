@@ -37,7 +37,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define TIME_OUT		0xFF
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,10 +47,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
-
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
-
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
@@ -67,9 +65,8 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 void Startup_Message(void);
-uint8_t ADXL345_init(void);
+int8_t ADXL345_init(void);
 void SPI_Error_Handler(void);
-uint8_t ADXL345_init(void);
 
 /* USER CODE END PFP */
 
@@ -121,6 +118,10 @@ int main(void)
 	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
+		uint8_t spi_init_check = ADXL345_init();
+		char spi_message[0x0F] = { 0 };
+		sprintf(spi_message, "%d \r\n", spi_init_check);
+		HAL_UART_Transmit(&huart1, (uint8_t *)spi_message, sizeof(spi_message), TIME_OUT);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -410,15 +411,16 @@ void Startup_Message(void)
 }
 
 /*---------- ADXL345 Init ---------- */
-uint8_t ADXL345_init(void)
+int8_t ADXL345_init(void)
 {
-	uint8_t tx_buf[0x0f];
-	uint8_t rx_buf[0x0f];
+	uint8_t *device_id = XL345_DEVID;
+	uint8_t *rx_buf = 0x00;
 	uint16_t data_size = 0x0f;
 	uint16_t time_out = 0xff;
-	tx_buf = XL345_DEVID;
-	HAL_SPI_TransmitReceive(&hspi1, *tx_buf, *rx_buf, data_size, time_out);
-	if(rx_buf != 0xE5)
+
+	HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)device_id, (uint8_t *)rx_buf, data_size, time_out);
+
+	if(*rx_buf != 0xE5)
 	{
 		SPI_Error_Handler();
 		return 1;
@@ -429,14 +431,14 @@ uint8_t ADXL345_init(void)
 	}
 }
 /*---------- Get ADXL345 Acceleration Data ---------- */
+
 /*---------- SPI Error Handler ---------- */
 void SPI_Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	uint8_t Spi_error_message[] = "SPI communication has problem\r\n";
-	uint16_t time_out = 0xff;
-	HAL_UART_Transmit(&huart1, (uint8_t*)Spi_error_message, sizeof(Spi_error_message), time_out);
+	HAL_UART_Transmit(&huart1, (uint8_t*)Spi_error_message, sizeof(Spi_error_message), TIME_OUT);
 
 	/* USER CODE END Error_Handler_Debug */
 }

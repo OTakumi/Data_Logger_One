@@ -64,7 +64,12 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
+
 /* USER CODE BEGIN PFP */
+void Startup_Message(void);
+uint8_t ADXL345_init(void);
+void SPI_Error_Handler(void);
+uint8_t ADXL345_init(void);
 
 /* USER CODE END PFP */
 
@@ -77,6 +82,8 @@ static void MX_USART1_UART_Init(void);
  * @brief  The application entry point.
  * @retval int
  */
+
+/*---------- main ---------- */
 int main(void)
 {
 	/* USER CODE BEGIN 1 */
@@ -105,8 +112,9 @@ int main(void)
 	MX_SPI1_Init();
 	MX_SPI2_Init();
 	MX_USART1_UART_Init();
-	/* USER CODE BEGIN 2 */
 
+	/* USER CODE BEGIN 2 */
+	Startup_Message();
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -392,7 +400,46 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/*---------- Startup message ---------- */
+void Startup_Message(void)
+{
+	uint8_t message[] = "Start Data logging\r\n";
+	uint8_t time_out = 0xff;
 
+	HAL_UART_Transmit(&huart1, (uint8_t*)message, sizeof(message), time_out);
+}
+
+/*---------- ADXL345 Init ---------- */
+uint8_t ADXL345_init(void)
+{
+	uint8_t tx_buf[0x0f];
+	uint8_t rx_buf[0x0f];
+	uint16_t data_size = 0x0f;
+	uint16_t time_out = 0xff;
+	tx_buf = XL345_DEVID;
+	HAL_SPI_TransmitReceive(&hspi1, *tx_buf, *rx_buf, data_size, time_out);
+	if(rx_buf != 0xE5)
+	{
+		SPI_Error_Handler();
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+/*---------- Get ADXL345 Acceleration Data ---------- */
+/*---------- SPI Error Handler ---------- */
+void SPI_Error_Handler(void)
+{
+	/* USER CODE BEGIN Error_Handler_Debug */
+	/* User can add his own implementation to report the HAL error return state */
+	uint8_t Spi_error_message[] = "SPI communication has problem\r\n";
+	uint16_t time_out = 0xff;
+	HAL_UART_Transmit(&huart1, (uint8_t*)Spi_error_message, sizeof(Spi_error_message), time_out);
+
+	/* USER CODE END Error_Handler_Debug */
+}
 /* USER CODE END 4 */
 
 /**

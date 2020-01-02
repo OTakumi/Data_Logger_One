@@ -23,6 +23,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include "stm32l0xx.h"
+#include "adxl345.h"
+#include "adxl372.h"
 
 /* USER CODE END Includes */
 

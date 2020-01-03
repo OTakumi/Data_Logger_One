@@ -7,9 +7,9 @@
 
 #pragma once
 
-#define XL372_DEVID_AD            0x00
-#define XL372_DEVID_MST           0x01
-#define XL372_PARTID              0x02
+#define XL372_DEVID_AD	            0x00
+#define XL372_DEVID_MST 	        0x01
+#define XL372_PARTID				0x02
 #define XL372_REVID               0x03
 #define XL372_STATUS              0x04
 #define XL372_STATUS2             0x05
@@ -63,4 +63,7 @@
 #define XL372_RESET               0x41
 #define XL372_FIFO_DATA           0x42
 
+#define XL372_I_M_DEVID			0xFA
 
+#define XL372_CS_LOW()       			HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_RESET)
+#define XL372_CS_HIGH()      			HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_SET)

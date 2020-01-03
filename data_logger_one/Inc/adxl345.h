@@ -47,7 +47,7 @@
 #define	XL345_FIFO_CTL					0x38		// FIFO control
 #define XL345_FIFO_STATUS				0x39		// FIFO status
 
-#define XL345_I_M_DEVID ((uint8_t)0xE5)			// Device ID = 0xE5
+#define XL345_I_M_DEVID 				((uint8_t)0xE5)			// Device ID = 0xE5
 /*=========================================================================*/
 
 /*=========================================================================
@@ -107,11 +107,7 @@ typedef enum
 #define XL345_SPI_MOSI_SOURCE         GPIO_PinSource15
 #define XL345_SPI_MOSI_AF             GPIO_AF_SPI2
 
-#define XL345_SPI_CS_PIN              GPIO_Pin_12
-#define XL345_SPI_CS_GPIO_PORT        GPIOB
-#define XL345_SPI_CS_GPIO_RCC         RCC_AHB1Periph_GPIOB
-
-#define XL345_CS_LOW()       			GPIO_ResetBits(ADXL345_SPI_CS_GPIO_PORT, ADXL345_SPI_CS_PIN)
-#define XL345_CS_HIGH()      			GPIO_SetBits(ADXL345_SPI_CS_GPIO_PORT, ADXL345_SPI_CS_PIN)
+#define XL345_CS_LOW()       			HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_RESET)
+#define XL345_CS_HIGH()      			HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_SET)
 
 /* Private function prototypes -----------------------------------------------*/

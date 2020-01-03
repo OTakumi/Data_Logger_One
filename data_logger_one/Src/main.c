@@ -66,6 +66,7 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void Startup_Message(void);
 int8_t ADXL345_init(void);
+void Uart_Message(char*);
 void SPI_Error_Handler(void);
 
 /* USER CODE END PFP */
@@ -404,10 +405,9 @@ static void MX_GPIO_Init(void)
 /*---------- Startup message ---------- */
 void Startup_Message(void)
 {
-	uint8_t message[] = "Start Data logging\r\n";
-	uint8_t time_out = 0xff;
+	char message[] = "Start Data logging\r\n";
 
-	HAL_UART_Transmit(&huart1, (uint8_t*)message, sizeof(message), time_out);
+	Uart_Message(message);
 }
 
 /*---------- ADXL345 Init ---------- */
@@ -416,9 +416,8 @@ int8_t ADXL345_init(void)
 	uint8_t *device_id = XL345_DEVID;
 	uint8_t *rx_buf = 0x00;
 	uint16_t data_size = 0x0f;
-	uint16_t time_out = 0xff;
 
-	HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)device_id, (uint8_t *)rx_buf, data_size, time_out);
+	HAL_SPI_TransmitReceive(&hspi1, (uint8_t *)device_id, (uint8_t *)rx_buf, data_size, TIME_OUT);
 
 	if(*rx_buf != 0xE5)
 	{
@@ -432,13 +431,21 @@ int8_t ADXL345_init(void)
 }
 /*---------- Get ADXL345 Acceleration Data ---------- */
 
+/*---------- UART message ---------- */
+void Uart_Message(char *message)
+{
+	char tx_message[0xff] = { 0 };
+	sprintf(tx_message, "%s", message);
+	HAL_UART_Transmit(&huart1, (uint8_t*)tx_message, sizeof(tx_message), TIME_OUT);
+}
+
 /*---------- SPI Error Handler ---------- */
 void SPI_Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
-	uint8_t Spi_error_message[] = "SPI communication has problem\r\n";
-	HAL_UART_Transmit(&huart1, (uint8_t*)Spi_error_message, sizeof(Spi_error_message), TIME_OUT);
+	char Spi_error_message[] = "SPI communication has problem\r\n";
+	Uart_Message(Spi_error_message);
 
 	/* USER CODE END Error_Handler_Debug */
 }
@@ -452,6 +459,8 @@ void Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
+	char error_handler_message[] = "Have some Error";
+	Uart_Message(error_handler_message);
 
 	/* USER CODE END Error_Handler_Debug */
 }

@@ -83,49 +83,54 @@ void Uart_Message(char*);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
-  
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  MX_SPI1_Init();
-  MX_SPI2_Init();
-  MX_USART1_UART_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_I2C1_Init();
+	MX_SPI1_Init();
+	MX_SPI2_Init();
+	MX_USART1_UART_Init();
+
+	/* USER CODE BEGIN 2 */
 	Startup_Message();
-  /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-	while (1)
+	if (ADXL345_init() != 0 && ADXL372_init() != 0)
 	{
 		ADXL345_init();
 		ADXL372_init();
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+
+	/* USER CODE END 2 */
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1)
+	{
+		Uart_Message("Hello World\r\n");
+		/* USER CODE END WHILE */
+
+		/* USER CODE BEGIN 3 */
+	}
+	/* USER CODE END 3 */
 }
 
 /**
@@ -227,33 +232,33 @@ static void MX_I2C1_Init(void)
 static void MX_SPI1_Init(void)
 {
 
-  /* USER CODE BEGIN SPI1_Init 0 */
+	/* USER CODE BEGIN SPI1_Init 0 */
 
-  /* USER CODE END SPI1_Init 0 */
+	/* USER CODE END SPI1_Init 0 */
 
-  /* USER CODE BEGIN SPI1_Init 1 */
+	/* USER CODE BEGIN SPI1_Init 1 */
 
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI1_Init 2 */
+	/* USER CODE END SPI1_Init 1 */
+	/* SPI1 parameter configuration*/
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1.Init.CRCPolynomial = 8;
+	if (HAL_SPI_Init(&hspi1) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN SPI1_Init 2 */
 
-  /* USER CODE END SPI1_Init 2 */
+	/* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -398,22 +403,42 @@ void Startup_Message(void)
 /*---------- ADXL345 Init ---------- */
 int8_t ADXL345_init(void)
 {
-	uint8_t device_id = XL345_DEVID;
-	uint8_t xl345_rx_buf[8] = {  };
-	uint16_t data_size = 0x0f;
+	// uint8_t device_id = XL345_DEVID;
+	// uint8_t data_format = XL345_DATA_FORMAT;
+	uint8_t xl345_tx_buf[3] = { XL345_DEVID, XL345_DATA_FORMAT, 0xff };
+	uint8_t format_data = 0xAC;
+	uint8_t xl345_rx_buf[8] = { };
+	char message[0x20] = { };
+
+	/*
+	sprintf(message, "device_id = %x \r\n", xl345_tx_buf[0]);
+	Uart_Message(message);
+	sprintf(message, "data_format = %x \r\n", xl345_tx_buf[1]);
+	Uart_Message(message);
+	sprintf(message, "format_data = %x \r\n", format_data);
+	Uart_Message(message);
+	*/
 
 	XL345_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_TransmitReceive(&hspi1, &device_id, (uint8_t *)xl345_rx_buf, data_size, TIME_OUT);
+	HAL_SPI_Transmit(&hspi1, &xl345_tx_buf[1], 0x08, TIME_OUT);
+	HAL_SPI_Transmit(&hspi1, &format_data, 0x08, TIME_OUT);
+	XL345_CS_HIGH();
+	HAL_Delay(5);
+
+	XL345_CS_LOW();
+	HAL_Delay(5);
+	HAL_SPI_TransmitReceive(&hspi1, &xl345_tx_buf[0], (uint8_t *)xl345_rx_buf, 0x08, TIME_OUT);
 	HAL_Delay(5);
 	XL345_CS_HIGH();
 
-	uint16_t xl345_device_id = 0x0000;
-	xl345_device_id = xl345_device_id || xl345_rx_buf[6];
-	xl345_device_id = xl345_device_id << 8;
-	xl345_device_id = xl345_device_id || xl345_rx_buf[7];
+	uint8_t xl345_rx_buf_data = xl345_rx_buf[5] << 1;
+	xl345_rx_buf_data = xl345_rx_buf_data + 1;
 
-	if(xl345_device_id != XL345_I_M_DEVID)
+	sprintf(message, "rx data = %x \r\n", xl345_rx_buf_data);
+	Uart_Message(message);
+
+	if(xl345_rx_buf_data != XL345_I_M_DEVID)
 	{
 		Uart_Message("ADXL345 SPI Error\r\n");
 		return 1;
@@ -429,7 +454,7 @@ int8_t ADXL345_init(void)
 int8_t ADXL372_init(void)
 {
 	uint8_t device_id = XL372_DEVID_MST;
-	uint8_t xl372_rx_buf[8] = {  };
+	uint8_t xl372_rx_buf[6] = {  };
 	uint16_t data_size = 0x0f;
 
 	XL372_CS_LOW();

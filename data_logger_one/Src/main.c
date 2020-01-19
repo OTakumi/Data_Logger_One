@@ -15,6 +15,17 @@
  *                        opensource.org/licenses/BSD-3-Clause
  *
  ******************************************************************************
+ * @System Detail
+ * ・ ジャイロセンサーと温湿度センサーからデータを取得する
+ * ・ 取得したデータをcsv形式でFlashMemoryに保存する
+ * ・ FlashMemoryに保存したデータをUARTでPCに送信する
+ * ・ 測定中にもUARTで送信、確認表示できる
+ * ・ ジャイロデータは0.1msごとに取得する
+ * ・ 温度データは1minごとに取得する
+ * ・ SWでモード切替する
+ * 	・ モード1：FlashMemoryに保存したデータをPCに送信するモード
+ * 	・ モード2：通常測定を行う
+ ******************************************************************************
  */
 /* USER CODE END Header */
 
@@ -27,6 +38,7 @@
 #include "stm32l0xx.h"
 #include "adxl345.h"
 #include "adxl372.h"
+#include "si7006_a20.h"
 
 /* USER CODE END Includes */
 
@@ -69,12 +81,14 @@ void Startup_Message(void);
 int8_t ADXL345_init(void);
 int8_t ADXL372_init(void);
 void Uart_Message(char*);
+void Get_Temp_Humid(int*);
+void Led_Bring(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+char MESSAGE[0xff] = {};
 /* USER CODE END 0 */
 
 /**
@@ -125,7 +139,10 @@ int main(void)
 	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		Uart_Message("Hello World\r\n");
+		int *si7006_data_buf[4] = { };
+
+		Get_Temp_Humid(*si7006_data_buf);
+		Led_Bring();
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -192,33 +209,34 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE BEGIN I2C1_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00000103;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Analogue filter 
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure Digital filter 
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
+	/* USER CODE END I2C1_Init 1 */
+	hi2c1.Instance = I2C1;
+	hi2c1.Init.Timing = 0x200009FE;
+	hi2c1.Init.OwnAddress1 = 0;
+	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c1.Init.OwnAddress2 = 0;
+	hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+	{
+		Uart_Message("I2C has error");
+		Error_Handler();
+	}
+	/** Configure Analogue filter
+	 */
+	if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/** Configure Digital filter
+	 */
+	if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
 
@@ -403,6 +421,9 @@ void Startup_Message(void)
 /*---------- ADXL345 Init ---------- */
 int8_t ADXL345_init(void)
 {
+	/*
+	 * SPI通信確認
+	 */
 	// uint8_t device_id = XL345_DEVID;
 	// uint8_t data_format = XL345_DATA_FORMAT;
 	uint8_t xl345_tx_buf[3] = { XL345_DEVID, XL345_DATA_FORMAT, 0xff };
@@ -453,6 +474,9 @@ int8_t ADXL345_init(void)
 /*---------- ADXL372 Init ---------- */
 int8_t ADXL372_init(void)
 {
+	/*
+	 * SPI通信確認
+	 */
 	uint8_t device_id = XL372_DEVID_MST;
 	uint8_t xl372_rx_buf[6] = {  };
 	uint16_t data_size = 0x0f;
@@ -476,9 +500,50 @@ int8_t ADXL372_init(void)
 }
 /*---------- Get ADXL345 Acceleration Data ---------- */
 
+/*---------- Get Temperature and Humidity ---------- */
+void Get_Temp_Humid(int *si7006_data)
+{
+	/*
+	 * si7006から温度、湿度データを取得する
+	 */
+	uint8_t i2c_tx_buf[8] = { 0x00 };
+	uint8_t Humid_data_buf[8] = { 0x00 };
+	i2c_tx_buf[0] = Humidity_Not_Hold;
+	uint8_t Temp_data_buf[8] = { 0x00 };
+	i2c_tx_buf[1] = Temperature_Not_Hold;
+	uint16_t device_addr = Si7006_ADDERSS << 1;
+
+	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[0], 0x08, TIME_OUT);
+	HAL_I2C_Master_Receive(&hi2c1, device_addr, Humid_data_buf, 0x08, TIME_OUT);
+
+	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[1], 0x08, TIME_OUT);
+	HAL_I2C_Master_Receive(&hi2c1, device_addr, Temp_data_buf, 0x08, TIME_OUT);
+
+	sprintf(MESSAGE, "Temp = %x ", Temp_data_buf[0]);
+	Uart_Message(MESSAGE);
+	sprintf(MESSAGE, "Humid = %x\r\n", Humid_data_buf[0]);
+	Uart_Message(MESSAGE);
+}
+
+/*---------- LED Bring ---------- */
+void Led_Bring(void)
+{
+	/*
+	 * LED点滅設定
+	 */
+
+	HAL_GPIO_WritePin(Mode_LED_GPIO_Port, Mode_LED_Pin, GPIO_PIN_SET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(Mode_LED_GPIO_Port, Mode_LED_Pin, GPIO_PIN_RESET);
+}
 /*---------- UART message ---------- */
 void Uart_Message(char *message)
 {
+	/*
+	 * UARTでメッセージを送信
+	 * 引数：message
+	 * 		表示したい文字列
+	 */
 	char tx_message[0xff] = { 0 };
 	sprintf(tx_message, "%s", message);
 	HAL_UART_Transmit(&huart1, (uint8_t*)tx_message, sizeof(tx_message), TIME_OUT);

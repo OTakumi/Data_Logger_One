@@ -86,6 +86,8 @@ static void MX_TIM6_Init(void);
 void Startup_Message(void);
 int8_t ADXL345_init(void);
 int8_t ADXL372_init(void);
+void XL345_readXYZ(int16_t*, int16_t*, int16_t*);
+uint8_t ADXL345_read_byte(uint8_t);
 void Uart_Message(char*);
 void Get_Temp_Humid(int*);
 void Led_Bring(void);
@@ -135,7 +137,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	Startup_Message();
 
-	if (ADXL345_init() != 0 && ADXL372_init() != 0)
+	while(ADXL345_init() != 0 && ADXL372_init() != 0)
 	{
 		ADXL345_init();
 		ADXL372_init();
@@ -147,10 +149,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
+		int16_t x = 0, y = 0, z = 0;
 		int *si7006_data_buf[4] = { };
 
 		Get_Temp_Humid(*si7006_data_buf);
 		Led_Bring();
+		XL345_readXYZ(&x, &y, &z);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -308,14 +312,14 @@ static void MX_SPI1_Init(void)
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
+  hspi1.Init.CRCPolynomial = 8;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();
@@ -508,21 +512,11 @@ int8_t ADXL345_init(void)
 	/*
 	 * SPIí êMämîF
 	 */
-	// uint8_t device_id = XL345_DEVID;
-	// uint8_t data_format = XL345_DATA_FORMAT;
+
 	uint8_t xl345_tx_buf[3] = { XL345_DEVID, XL345_DATA_FORMAT, 0xff };
 	uint8_t format_data = 0xAC;
 	uint8_t xl345_rx_buf[8] = { };
 	char message[0x20] = { };
-
-	/*
-	sprintf(message, "device_id = %x \r\n", xl345_tx_buf[0]);
-	Uart_Message(message);
-	sprintf(message, "data_format = %x \r\n", xl345_tx_buf[1]);
-	Uart_Message(message);
-	sprintf(message, "format_data = %x \r\n", format_data);
-	Uart_Message(message);
-	*/
 
 	XL345_CS_LOW();
 	HAL_Delay(5);
@@ -583,6 +577,37 @@ int8_t ADXL372_init(void)
 	}
 }
 /*---------- Get ADXL345 Acceleration Data ---------- */
+void XL345_readXYZ(int16_t *xl345_x, int16_t *xl345_y, int16_t *xl345_z)
+{
+	uint8_t xl345_buf[6];
+
+	xl345_buf[0] = ADXL345_read_byte(0x32);
+	xl345_buf[1] = ADXL345_read_byte(0x33);
+
+	xl345_buf[2] = ADXL345_read_byte(0x34);
+	xl345_buf[3] = ADXL345_read_byte(0x35);
+
+	xl345_buf[4] = ADXL345_read_byte(0x36);
+	xl345_buf[5] = ADXL345_read_byte(0x37);
+
+	*xl345_x = ((uint16_t)xl345_buf[1] << 8) + xl345_buf[0];
+	*xl345_y = ((uint16_t)xl345_buf[3] << 8) + xl345_buf[2];
+	*xl345_z = ((uint16_t)xl345_buf[5] << 8) + xl345_buf[4];
+}
+
+uint8_t ADXL345_read_byte(uint8_t address)
+{
+	uint8_t xl345_tx_address = address;
+	uint8_t xl345_rx_buf[8] = { };
+
+	XL345_CS_LOW();
+	HAL_Delay(5);
+	HAL_SPI_TransmitReceive(&hspi1, &xl345_tx_address, (uint8_t *)xl345_rx_buf, 0x08, TIME_OUT);
+	HAL_Delay(5);
+	XL345_CS_HIGH();
+
+	return 0;
+}
 
 /*---------- Get Temperature and Humidity ---------- */
 void Get_Temp_Humid(int *si7006_data)

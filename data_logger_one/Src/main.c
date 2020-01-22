@@ -82,14 +82,16 @@ static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM6_Init(void);
+
 /* USER CODE BEGIN PFP */
 void Startup_Message(void);
+void Read_Sw_Status(int8_t*);
 int8_t ADXL345_init(void);
 int8_t ADXL372_init(void);
-void XL345_readXYZ(int16_t*, int16_t*, int16_t*);
+void XL345_readXYZ(int16_t*);
 uint8_t ADXL345_read_byte(uint8_t);
 void Uart_Message(char*);
-void Get_Temp_Humid(int*);
+void Get_Temp_Humid(uint16_t*, float*);
 void Led_Bring(void);
 
 /* USER CODE END PFP */
@@ -106,7 +108,7 @@ char MESSAGE[0xff] = {};
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	int8_t sw_flag = 0;
   /* USER CODE END 1 */
   
 
@@ -143,21 +145,45 @@ int main(void)
 		ADXL372_init();
 	}
 
+	// Mode SWの状態を取得し、Mode切替する
+	// SW = ON の場合、FlashMemoryからUARTでデータ送信モード
+	// SW = OFFの場合、データ取得モード
+	Read_Sw_Status(&sw_flag);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	// Mode SWがON(SW_Flag = 1)のとき
+	if(sw_flag == 1)
+	{
+
+	}
+
+	// Mode SWがOFF(SW_Flag = 0)のとき
+	if(sw_flag == 0)
+	{
 	while (1)
 	{
-		int16_t x = 0, y = 0, z = 0;
-		int *si7006_data_buf[4] = { };
+		int16_t xl345_data_buf[3] = { };
+		uint16_t humid = 0;
+		float temp = 0.0;
 
-		Get_Temp_Humid(*si7006_data_buf);
-		Led_Bring();
-		XL345_readXYZ(&x, &y, &z);
+		// 温度データを取得
+		Get_Temp_Humid(&humid, &temp);
+
+		// ADXL345からX軸, Y軸, Z軸の加速度データを取得する
+		XL345_readXYZ(xl345_data_buf);
+
+		// ADXL372からX軸, Y軸, Z軸の加速度データを取得する
+
+		// 取得したデータをCSV形式にまとめる
+
+		// FlashMemoryにデータを格納する
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	}
 	}
   /* USER CODE END 3 */
 }
@@ -506,6 +532,11 @@ void Startup_Message(void)
 	Uart_Message(message);
 }
 
+void Read_Sw_Status(int8_t* sw_status)
+{
+
+}
+
 /*---------- ADXL345 Init ---------- */
 int8_t ADXL345_init(void)
 {
@@ -577,28 +608,29 @@ int8_t ADXL372_init(void)
 	}
 }
 /*---------- Get ADXL345 Acceleration Data ---------- */
-void XL345_readXYZ(int16_t *xl345_x, int16_t *xl345_y, int16_t *xl345_z)
+void XL345_readXYZ(int16_t *xl345_data_buf)
 {
-	uint8_t xl345_buf[6];
+	uint8_t xl345_buf[6] = { };
 
-	xl345_buf[0] = ADXL345_read_byte(0x32);
-	xl345_buf[1] = ADXL345_read_byte(0x33);
+	xl345_buf[0] = ADXL345_read_byte(XL345_DATAX0);
+	xl345_buf[1] = ADXL345_read_byte(XL345_DATAX1);
 
-	xl345_buf[2] = ADXL345_read_byte(0x34);
-	xl345_buf[3] = ADXL345_read_byte(0x35);
+	xl345_buf[2] = ADXL345_read_byte(XL345_DATAY0);
+	xl345_buf[3] = ADXL345_read_byte(XL345_DATAY1);
 
-	xl345_buf[4] = ADXL345_read_byte(0x36);
-	xl345_buf[5] = ADXL345_read_byte(0x37);
+	xl345_buf[4] = ADXL345_read_byte(XL345_DATAZ0);
+	xl345_buf[5] = ADXL345_read_byte(XL345_DATAZ1);
 
-	*xl345_x = ((uint16_t)xl345_buf[1] << 8) + xl345_buf[0];
-	*xl345_y = ((uint16_t)xl345_buf[3] << 8) + xl345_buf[2];
-	*xl345_z = ((uint16_t)xl345_buf[5] << 8) + xl345_buf[4];
+	xl345_data_buf[0] = ((uint16_t)xl345_buf[1] << 8) + xl345_buf[0];
+	xl345_data_buf[1] = ((uint16_t)xl345_buf[3] << 8) + xl345_buf[2];
+	xl345_data_buf[2] = ((uint16_t)xl345_buf[5] << 8) + xl345_buf[4];
 }
 
 uint8_t ADXL345_read_byte(uint8_t address)
 {
 	uint8_t xl345_tx_address = address;
 	uint8_t xl345_rx_buf[8] = { };
+	int8_t xl345_acc_data = 0;
 
 	XL345_CS_LOW();
 	HAL_Delay(5);
@@ -606,11 +638,13 @@ uint8_t ADXL345_read_byte(uint8_t address)
 	HAL_Delay(5);
 	XL345_CS_HIGH();
 
-	return 0;
+	xl345_acc_data = xl345_rx_buf[0];
+
+	return xl345_acc_data;
 }
 
 /*---------- Get Temperature and Humidity ---------- */
-void Get_Temp_Humid(int *si7006_data)
+void Get_Temp_Humid(uint16_t *humid, float *temp)
 {
 	/*
 	 * si7006から温度、湿度データを取得する
@@ -622,15 +656,24 @@ void Get_Temp_Humid(int *si7006_data)
 	i2c_tx_buf[1] = Temperature_Not_Hold;
 	uint16_t device_addr = Si7006_ADDERSS << 1;
 
-	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[0], 0x08, TIME_OUT);
-	HAL_I2C_Master_Receive(&hi2c1, device_addr, Humid_data_buf, 0x08, TIME_OUT);
-
+	// 温度データを取得 単位：℃
+	// 計算式はデータシート参照
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[1], 0x08, TIME_OUT);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Temp_data_buf, 0x08, TIME_OUT);
+	*temp = (Temp_data_buf[0] << 8) + Temp_data_buf[2];
+	*temp = ((175.72 * (*temp)) / 65536) - 46.85;
 
-	sprintf(MESSAGE, "Temp = %x ", Temp_data_buf[0]);
+	// 湿度データ取得 単位：%
+	// 計算式はデータシート参照
+	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[0], 0x08, TIME_OUT);
+	HAL_I2C_Master_Receive(&hi2c1, device_addr, Humid_data_buf, 0x08, TIME_OUT);
+	*humid = (Humid_data_buf[0] << 8) + Humid_data_buf[2];
+	*humid = ((125 * (*humid)) / 65536) - 6;
+
+	// 取得データをUARTで表示
+	sprintf(MESSAGE, "Temp=%f, ", *temp);
 	Uart_Message(MESSAGE);
-	sprintf(MESSAGE, "Humid = %x\r\n", Humid_data_buf[0]);
+	sprintf(MESSAGE, "Humid=%d\r\n", *humid);
 	Uart_Message(MESSAGE);
 }
 

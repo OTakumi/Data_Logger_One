@@ -39,6 +39,7 @@
 #include "adxl345.h"
 #include "adxl372.h"
 #include "si7006_a20.h"
+#include "binary.h"
 
 /* USER CODE END Includes */
 
@@ -178,18 +179,12 @@ int main(void)
 			Get_Temp_Humid(&humid, &temp);
 
 			// ADXL345からX軸, Y軸, Z軸の加速度データを取得する
-			int16_t xl345_data_buf[3] =
-			{ };
-			int16_t *xl345_data = 0;
-			xl345_data = xl345_data_buf;
-			XL345_readXYZ(xl345_data);
+			int16_t xl345_data_buf[3] =	{ };
+			XL345_readXYZ(xl345_data_buf);
 
 			// ADXL372からX軸, Y軸, Z軸の加速度データを取得する
-			int16_t xl372_data_buf[3] =
-						{ };
-			int16_t *xl372_data = 0;
-			xl372_data = xl372_data_buf;
-			XL372_readXYZ(xl372_data);
+			int16_t xl372_data_buf[3] =	{ };
+			XL372_readXYZ(xl372_data_buf);
 
 			// 取得したデータをCSV形式にまとめる
 
@@ -363,8 +358,8 @@ static void MX_SPI1_Init(void)
 	hspi1_xl345.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
 	hspi1_xl345.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi1_xl345.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1_xl345.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi1_xl345.Init.CRCPolynomial = 8;
+	hspi1_xl345.Init.CRCCalculation = SPI_CRCCALCULATION_ENABLE;
+	hspi1_xl345.Init.CRCPolynomial = 7;
 
 	/* SPI1 for ADXL372 parameter configuration*/
 	/* ADLX372 SPI is MODE = 0*/
@@ -379,7 +374,7 @@ static void MX_SPI1_Init(void)
 	hspi1_xl372.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi1_xl372.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi1_xl372.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi1_xl372.Init.CRCPolynomial = 8;
+	hspi1_xl372.Init.CRCPolynomial = 7;
 
 	if (HAL_SPI_Init(&hspi1_xl345) != HAL_OK || HAL_SPI_Init(&hspi1_xl372) != HAL_OK)
 	{
@@ -590,35 +585,34 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 	/*
 	 * ADXL345のデバイスIDが取得できるか確認する
 	 */
-	uint8_t xl345_read_data[3] =
+	uint8_t xl345_read_data[9] =
 	{ };
-	xl345_read_data[0] = XL345_DEVID | 0xc0;
+	xl345_read_data[0] = ADXL345_DEVID | 0xc0;
 	xl345_read_data[1] = 0x00;
-	uint16_t data_size = 0x03;
 
-	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0X0b); //BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
-	ADXL345_SPI_Write(XL345_POWER_CTL, 0x08); //BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
-	ADXL345_SPI_Write(XL345_BW_RATE, 0x0e); //low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
-	ADXL345_SPI_Write(XL345_INT_ENABLE, 0x00); //Interrupt function setting: not enabled
-	ADXL345_SPI_Write(XL345_INT_MAP, 0x00); //Set the interrupt mapping to the INT1 pin or the INT2 pin.
-	ADXL345_SPI_Write(XL345_FIFO_CTL, 0x80);
+	ADXL345_SPI_Write(ADXL345_DATA_FORMAT, (ADXL345_FULL_RES | ADXL345_JUSTIFY | 0x03)); //BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
+	ADXL345_SPI_Write(ADXL345_POWER_CTL, B00001100); //BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
+	ADXL345_SPI_Write(ADXL345_BW_RATE, 0x0e); //low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
+	ADXL345_SPI_Write(ADXL345_INT_ENABLE, 0x00); //Interrupt function setting: not enabled
+	ADXL345_SPI_Write(ADXL345_INT_MAP, 0x00); //Set the interrupt mapping to the INT1 pin or the INT2 pin.
+	ADXL345_SPI_Write(ADXL345_FIFO_CTL, B10000000 | ADXL345_FIFO_STREAM);
 
-	ADXL345_SPI_Write(XL345_OFSX, 0x00); //XYZ offset adjustment
-	ADXL345_SPI_Write(XL345_OFSY, 0x00);
-	ADXL345_SPI_Write(XL345_OFSZ, 0x00);
+	ADXL345_SPI_Write(ADXL345_OFSX, 0x00); //XYZ offset adjustment
+	ADXL345_SPI_Write(ADXL345_OFSY, 0x00);
+	ADXL345_SPI_Write(ADXL345_OFSZ, 0x00);
 
 	// Get device id
-	XL345_CS_LOW();
+	ADXL345_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl345_read_data, data_size, TIME_OUT);
+	HAL_SPI_Receive(&hspi1_xl345, xl345_read_data, 0x08, TIME_OUT);
 	HAL_Delay(5);
-	XL345_CS_HIGH();
+	ADXL345_CS_HIGH();
 
-	uint8_t device_id = xl345_read_data[0] << 1;
-	uint8_t data_buf = xl345_read_data[1] >> 7;
+	uint8_t device_id = xl345_read_data[1] << 1;
+	uint8_t data_buf = xl345_read_data[2] >> 7;
 	device_id = device_id | data_buf;
 
-	if (device_id != XL345_I_M_DEVID)
+	if (device_id != ADXL345_ID)
 	{
 		Uart_Message("ADXL345 SPI Error\r\n");
 		*xl345_spi_error_flg = 1;
@@ -633,31 +627,24 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 /*---------- Get ADXL345 Acceleration Data ---------- */
 void XL345_readXYZ(int16_t *xl345_data_buf)
 {
-	// Data Formatレジスタ書込み
-	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0x0f);
-
 	uint8_t xl345_accel_data[6] =
 	{ };
 
-	xl345_accel_data[0] = ADXL345_SPI_Read(XL345_DATAX0);
-	xl345_accel_data[1] = ADXL345_SPI_Read(XL345_DATAX1);
+	xl345_accel_data[0] = ADXL345_SPI_Read(ADXL345_DATAX0);
+	xl345_accel_data[1] = ADXL345_SPI_Read(ADXL345_DATAX1);
 
-	xl345_accel_data[2] = ADXL345_SPI_Read(XL345_DATAY0);
-	xl345_accel_data[3] = ADXL345_SPI_Read(XL345_DATAY1);
+	xl345_accel_data[2] = ADXL345_SPI_Read(ADXL345_DATAY0);
+	xl345_accel_data[3] = ADXL345_SPI_Read(ADXL345_DATAY1);
 
-	xl345_accel_data[4] = ADXL345_SPI_Read(XL345_DATAZ0);
-	xl345_accel_data[5] = ADXL345_SPI_Read(XL345_DATAZ1);
+	xl345_accel_data[4] = ADXL345_SPI_Read(ADXL345_DATAZ0);
+	xl345_accel_data[5] = ADXL345_SPI_Read(ADXL345_DATAZ1);
 
-	/*
-	xl345_accel_data[6] = ADXL345_SPI_Read(XL345_FIFO_CTL);
-
-	xl345_accel_data[0] = xl345_accel_data[0] << 1 & xl345_accel_data[1] >> 7;
-	xl345_accel_data[1] = xl345_accel_data[1] << 1 & xl345_accel_data[2] >> 7;
-	xl345_accel_data[2] = xl345_accel_data[2] << 1 & xl345_accel_data[3] >> 7;
-	xl345_accel_data[3] = xl345_accel_data[3] << 1 & xl345_accel_data[4] >> 7;
-	xl345_accel_data[4] = xl345_accel_data[4] << 1 & xl345_accel_data[5] >> 7;
-	xl345_accel_data[5] = xl345_accel_data[5] << 1 & xl345_accel_data[6] >> 7;
-	*/
+	xl345_accel_data[0] = xl345_accel_data[0] << 1 | xl345_accel_data[1] >> 7;
+	xl345_accel_data[1] = xl345_accel_data[1] << 1 | xl345_accel_data[2] >> 7;
+	xl345_accel_data[2] = xl345_accel_data[2] << 1 | xl345_accel_data[3] >> 7;
+	xl345_accel_data[3] = xl345_accel_data[3] << 1 | xl345_accel_data[4] >> 7;
+	xl345_accel_data[4] = xl345_accel_data[4] << 1 | xl345_accel_data[5] >> 7;
+	xl345_accel_data[5] = xl345_accel_data[5] << 1 | xl345_accel_data[6] >> 7;
 
 	xl345_data_buf[0] = ((uint16_t)xl345_accel_data[1] << 8) + xl345_accel_data[0];
 	xl345_data_buf[1] = ((uint16_t)xl345_accel_data[3] << 8) + xl345_accel_data[2];
@@ -674,32 +661,32 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 
 uint16_t ADXL345_SPI_Read(uint8_t addr)
 {
-	uint8_t xl345_read_data_buf[10] = {  };
-	xl345_read_data_buf[0] = addr | 0xc0;
+	uint8_t xl345_read_data_buf[9] = {  };
+	xl345_read_data_buf[0] = addr | B11000000;
 	xl345_read_data_buf[1] = 0x00;
 
-	XL345_CS_LOW();
+	ADXL345_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl345_read_data_buf, 0x08, TIME_OUT);
+	HAL_SPI_Receive(&hspi1_xl345, xl345_read_data_buf, 0x08, TIME_OUT);
 	HAL_Delay(5);
-	XL345_CS_HIGH();
+	ADXL345_CS_HIGH();
 
 	uint16_t xl345_acc_data = 0;
-	xl345_acc_data = xl345_read_data_buf[3];
+	xl345_acc_data = xl345_read_data_buf[1];
 	return xl345_acc_data;
 }
 
 void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 {
 	uint8_t xl372_write_data_buf[2] = { };
-	xl372_write_data_buf[0] = addr & 0x7f;
+	xl372_write_data_buf[0] = addr & B01111111;
 	xl372_write_data_buf[1] = data;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, 0x03, TIME_OUT);
+	HAL_SPI_Transmit(&hspi1_xl345, xl372_write_data_buf, 0x03, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 }
 
 /*--------------------------------------
@@ -715,16 +702,16 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	{ };
 	uint16_t data_size = 0x02;
 
-	xl372_rx_data_buf[0] = XL372_PARTID << 1 | 0x01;
+	xl372_rx_data_buf[0] = ADXL372_PARTID << 1 | B00000001;
 	xl372_rx_data_buf[1] = 0x00;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl372_rx_data_buf, data_size, TIME_OUT);
+	HAL_SPI_Receive(&hspi1_xl372, xl372_rx_data_buf, data_size, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 
-	if (xl372_rx_data_buf[1] != XL372_I_M_DEVID)
+	if (xl372_rx_data_buf[1] != ADXL372_PARTID_VAL)
 	{
 		Uart_Message("ADXL372 SPI Error\r\n");
 		*xl372_spi_error_flg = 1;
@@ -741,15 +728,22 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 	uint8_t xl372_buf[8] =
 	{ };
 
-	uint8_t fifo_ctl_addr = XL372_FIFO_CTL;
-	uint8_t fifo_ctl_data = 0x02;
+	uint8_t fifo_ctl_addr = ADXL372_FIFO_CTL;
+	uint8_t fifo_ctl_data = B00000010;
 
 	// FIFO_CTLに設定値を書込み
 	ADXL372_SPI_Write(fifo_ctl_addr, fifo_ctl_data);
 	ADXL372_SPI_Read(fifo_ctl_addr);
-	ADXL372_SPI_Read(XL372_STATUS);
+	ADXL372_SPI_Read(ADXL372_STATUS_1);
 
-	xl372_buf[0] = ADXL372_SPI_Read(XL372_FIFO_ENTRIES2);
+	xl372_buf[0] = ADXL372_SPI_Read(ADXL372_X_DATA_H);
+	xl372_buf[1] = ADXL372_SPI_Read(ADXL372_X_DATA_L);
+
+	xl372_buf[2] = ADXL372_SPI_Read(ADXL372_Y_DATA_H);
+	xl372_buf[3] = ADXL372_SPI_Read(ADXL372_Y_DATA_L);
+
+	xl372_buf[4] = ADXL372_SPI_Read(ADXL372_Z_DATA_H);
+	xl372_buf[5] = ADXL372_SPI_Read(ADXL372_Z_DATA_L);
 
 	Uart_Message("XL372 : ");
 	xl372_data_buf[0] = ((uint16_t) xl372_buf[1] << 8) + xl372_buf[0];
@@ -765,15 +759,15 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 
 uint16_t ADXL372_SPI_Read(uint8_t addr)
 {
-	uint8_t xl372_read_data_buf[10] = {  };
-	xl372_read_data_buf[0] = addr << 1 | 0x01;
+	uint8_t xl372_read_data_buf[9] = {  };
+	xl372_read_data_buf[0] = addr << 1 | B00000001;
 	int16_t xl372_acc_data = 0;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl372_read_data_buf, 0x11, TIME_OUT);
+	HAL_SPI_Receive(&hspi1_xl372, xl372_read_data_buf, 0x09, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 
 	xl372_acc_data = xl372_read_data_buf[0];
 
@@ -786,11 +780,11 @@ void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
 	xl372_write_data_buf[0] = addr << 1 ;
 	xl372_write_data_buf[1] = data;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, 0x08, TIME_OUT);
+	HAL_SPI_Transmit(&hspi1_xl372, xl372_write_data_buf, 0x08, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 }
 
 /*---------- Get Temperature and Humidity ---------- */

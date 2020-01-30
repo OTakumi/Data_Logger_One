@@ -1,113 +1,302 @@
-/**************************************************************************/
-/*!
-    @file     adxl345.h
-    @author   Takumi O
-    @Created on: 2019/11/03
-*/
-/**************************************************************************/
+/***************************************************************************//**
+ *   @file   adxl345.h
+ *   @brief  Header file of ADXL345 Driver.
+ *   @author DBogdan (dragos.bogdan@analog.com)
+********************************************************************************
+ * Copyright 2012(c) Analog Devices, Inc.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  - Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  - Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *  - Neither the name of Analog Devices, Inc. nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *  - The use of this software may or may not infringe the patent rights
+ *    of one or more patent holders.  This license does not release you
+ *    from the requirement that you obtain separate licenses from these
+ *    patent holders to use this software.
+ *  - Use of the software either in source or binary form, must be run
+ *    on or directly connected to an Analog Devices Inc. component.
+ *
+ * THIS SOFTWARE IS PROVIDED BY ANALOG DEVICES "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, NON-INFRINGEMENT,
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL ANALOG DEVICES BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, INTELLECTUAL PROPERTY RIGHTS, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*******************************************************************************/
+#ifndef __ADXL345_H__
+#define __ADXL345_H__
 
-#ifndef ADXL345_H_
-#define ADXL345_H_
+/******************************************************************************/
+/***************************** Include Files **********************************/
+/******************************************************************************/
+#include <stdint.h>
+#include "i2c.h"
+#include "spi.h"
 
+/******************************************************************************/
+/******************************** ADXL345 *************************************/
+/******************************************************************************/
 
+/* Options for communicating with the device. */
+#define ADXL345_SPI_COMM       0
+#define ADXL345_I2C_COMM       1
 
-#endif /* ADXL345_H_ */
+/* Pin Setting */
+#define ADXL345_CS_LOW()		HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_RESET);
+#define ADXL345_CS_HIGH()		HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_SET);
 
-/*=========================================================================
-	ADXL345 REGISTER MAP from ADXL345 Datasheet */
+/* I2C address of the device */
+#define ADXL345_ADDRESS		0x1D
 
-#define XL345_DEVID						0x00		// Device ID
-#define XL345_THRESH_TAP				0x1D		// Tap threshold
-#define XL345_OFSX						0x1E		// X-axis Offset
-#define	XL345_OFSY						0x1F		// Y-axis Offset
-#define XL345_OFSZ						0x20		// Z-axis Offset
-#define XL345_DUR						0x21		// Tap duration
-#define	XL345_Latent					0x22		// Tap latency
-#define	XL345_Window					0x23		// Tap window
-#define	XL345_THRESH_ACT				0x24		// Activity threshold
-#define	XL345_THRESH_INACT				0x25		// Inactivity threshold
-#define XL345_TIME_INACT				0x26		// Inactivity time
-#define XL345_ACT_INACT_CTL				0x27		// Axis enable control for activity detection
-#define	XL345_THRESH_FF					0x28		// Free-fall threshold
-#define	XL345_TIME_FF					0x29		// Free-fall time
-#define XL345_TAP_AXES					0x2A		// Axis control for single tap/double tap
-#define XL345_ACT_TAP_STATUS			0x2B		// Source of single tap/double tap
-#define XL345_BW_RATE					0x2C		// Date rate and power mode control
-#define	XL345_POWER_CTL					0x2D		// Power-saving feature control
-#define XL345_INT_ENABLE				0x2E		// Interrupt enable control
-#define XL345_INT_MAP					0x2F		// Interrupt mapping control
-#define	XL345_INIT_SOURCE				0x30		// Source of interrupt
-#define XL345_DATA_FORMAT				0x31		// Data format control
-#define XL345_DATAX0					0x32		// X-Axis Data 0
-#define XL345_DATAX1					0x33		// X-Axis Data 1
-#define XL345_DATAY0					0x34		// Y-Axis Data 0
-#define XL345_DATAY1					0x35		// Y-Axis Data 1
-#define XL345_DATAZ0					0x36		// Z-Axis Data 0
-#define XL345_DATAZ1					0x37		// Z-Axis Data 1
-#define	XL345_FIFO_CTL					0x38		// FIFO control
-#define XL345_FIFO_STATUS				0x39		// FIFO status
+/* SPI commands */
+#define ADXL345_SPI_READ        (1 << 7)
+#define ADXL345_SPI_WRITE       (0 << 7)
+#define ADXL345_SPI_MB          (1 << 6)
 
-#define XL345_I_M_DEVID 				((uint8_t)0xE5)			// Device ID = 0xE5
-/*=========================================================================*/
+/* ADXL345 Register Map */
+#define	ADXL345_DEVID           0x00 // R   Device ID.
+#define ADXL345_THRESH_TAP      0x1D // R/W Tap threshold.
+#define ADXL345_OFSX            0x1E // R/W X-axis offset.
+#define ADXL345_OFSY            0x1F // R/W Y-axis offset.
+#define ADXL345_OFSZ            0x20 // R/W Z-axis offset.
+#define ADXL345_DUR             0x21 // R/W Tap duration.
+#define ADXL345_LATENT          0x22 // R/W Tap latency.
+#define ADXL345_WINDOW          0x23 // R/W Tap window.
+#define ADXL345_THRESH_ACT      0x24 // R/W Activity threshold.
+#define ADXL345_THRESH_INACT    0x25 // R/W Inactivity threshold.
+#define ADXL345_TIME_INACT      0x26 // R/W Inactivity time.
+#define ADXL345_ACT_INACT_CTL   0x27 // R/W Axis enable control for activity
+// and inactivity detection.
+#define ADXL345_THRESH_FF       0x28 // R/W Free-fall threshold.
+#define ADXL345_TIME_FF         0x29 // R/W Free-fall time.
+#define ADXL345_TAP_AXES        0x2A // R/W Axis control for tap/double tap.
+#define ADXL345_ACT_TAP_STATUS  0x2B // R   Source of tap/double tap.
+#define ADXL345_BW_RATE         0x2C // R/W Data rate and power mode control.
+#define ADXL345_POWER_CTL       0x2D // R/W Power saving features control.
+#define ADXL345_INT_ENABLE      0x2E // R/W Interrupt enable control.
+#define ADXL345_INT_MAP         0x2F // R/W Interrupt mapping control.
+#define ADXL345_INT_SOURCE      0x30 // R   Source of interrupts.
+#define ADXL345_DATA_FORMAT     0x31 // R/W Data format control.
+#define ADXL345_DATAX0          0x32 // R   X-Axis Data 0.
+#define ADXL345_DATAX1          0x33 // R   X-Axis Data 1.
+#define ADXL345_DATAY0          0x34 // R   Y-Axis Data 0.
+#define ADXL345_DATAY1          0x35 // R   Y-Axis Data 1.
+#define ADXL345_DATAZ0          0x36 // R   Z-Axis Data 0.
+#define ADXL345_DATAZ1          0x37 // R   Z-Axis Data 1.
+#define ADXL345_FIFO_CTL        0x38 // R/W FIFO control.
+#define ADXL345_FIFO_STATUS     0x39 // R   FIFO status.
 
-/*=========================================================================
-    REGISTERS
-    -----------------------------------------------------------------------*/
-    #define ADXL345_MG2G_MULTIPLIER (0.004)  // 4mg per lsb
-/*=========================================================================*/
-/* Used with register 0x2C (ADXL345_REG_BW_RATE) to set bandwidth */
-typedef enum
-{
-	XL345_DATARATE_3200_HZ = 0b1111, // 1600Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_1600_HZ = 0b1110, //  800Hz Bandwidth    90ƒÊA IDD
-	XL345_DATARATE_800_HZ = 0b1101, //  400Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_400_HZ = 0b1100, //  200Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_200_HZ = 0b1011, //  100Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_100_HZ = 0b1010, //   50Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_50_HZ = 0b1001, //   25Hz Bandwidth    90ƒÊA IDD
-	XL345_DATARATE_25_HZ = 0b1000, // 12.5Hz Bandwidth    60ƒÊA IDD
-	XL345_DATARATE_12_5_HZ = 0b0111, // 6.25Hz Bandwidth    50ƒÊA IDD
-	XL345_DATARATE_6_25HZ = 0b0110, // 3.13Hz Bandwidth    45ƒÊA IDD
-	XL345_DATARATE_3_13_HZ = 0b0101, // 1.56Hz Bandwidth    40ƒÊA IDD
-	XL345_DATARATE_1_56_HZ = 0b0100, // 0.78Hz Bandwidth    34ƒÊA IDD
-	XL345_DATARATE_0_78_HZ = 0b0011, // 0.39Hz Bandwidth    23ƒÊA IDD
-	XL345_DATARATE_0_39_HZ = 0b0010, // 0.20Hz Bandwidth    23ƒÊA IDD
-	XL345_DATARATE_0_20_HZ = 0b0001, // 0.10Hz Bandwidth    23ƒÊA IDD
-	XL345_DATARATE_0_10_HZ = 0b0000 // 0.05Hz Bandwidth    23ƒÊA IDD (default value)
-} dataRate_t;
+/* ADXL345_ACT_INACT_CTL definition */
+#define ADXL345_ACT_ACDC        (1 << 7)
+#define ADXL345_ACT_X_EN        (1 << 6)
+#define ADXL345_ACT_Y_EN        (1 << 5)
+#define ADXL345_ACT_Z_EN        (1 << 4)
+#define ADXL345_INACT_ACDC      (1 << 3)
+#define ADXL345_INACT_X_EN      (1 << 2)
+#define ADXL345_INACT_Y_EN      (1 << 1)
+#define ADXL345_INACT_Z_EN      (1 << 0)
 
-/* Used with register 0x31 (ADXL345_REG_DATA_FORMAT) to set g range */
-typedef enum
-{
-	XL345_RANGE_16_G = 0b11,   // +/- 16g
-	XL345_RANGE_8_G = 0b10,   // +/- 8g
-	XL345_RANGE_4_G = 0b01,   // +/- 4g
-	XL345_RANGE_2_G = 0b00    // +/- 2g (default value)
-} range_t;
+/* ADXL345_TAP_AXES definition */
+#define ADXL345_SUPPRESS        (1 << 3)
+#define ADXL345_TAP_X_EN        (1 << 2)
+#define ADXL345_TAP_Y_EN        (1 << 1)
+#define ADXL345_TAP_Z_EN        (1 << 0)
 
-/******************SPI pin configuration macro **********************/
-#define XL345_SPIX                    SPI1
-#define XL345_SPI_RCC                 RCC_APB1Periph_SPI1
+/* ADXL345_ACT_TAP_STATUS definition */
+#define ADXL345_ACT_X_SRC       (1 << 6)
+#define ADXL345_ACT_Y_SRC       (1 << 5)
+#define ADXL345_ACT_Z_SRC       (1 << 4)
+#define ADXL345_ASLEEP          (1 << 3)
+#define ADXL345_TAP_X_SRC       (1 << 2)
+#define ADXL345_TAP_Y_SRC       (1 << 1)
+#define ADXL345_TAP_Z_SRC       (1 << 0)
 
-#define XL345_SPI_SCK_PIN             GPIO_Pin_13
-#define XL345_SPI_SCK_GPIO_PORT       GPIOB
-#define XL345_SPI_SCK_GPIO_RCC        RCC_AHB1Periph_GPIOB
-#define XL345_SPI_SCK_SOURCE          GPIO_PinSource13
-#define XL345_SPI_SCK_AF              GPIO_AF_SPI2
+/* ADXL345_BW_RATE definition */
+#define ADXL345_LOW_POWER       (1 << 4)
+#define ADXL345_RATE(x)         ((x) & 0xF)
 
-#define XL345_SPI_MISO_PIN            GPIO_Pin_14
-#define XL345_SPI_MISO_GPIO_PORT      GPIOB
-#define XL345_SPI_MISO_GPIO_RCC       RCC_AHB1Periph_GPIOB
-#define XL345_SPI_MISO_SOURCE         GPIO_PinSource14
-#define XL345_SPI_MISO_AF             GPIO_AF_SPI2
+/* ADXL345_POWER_CTL definition */
+#define ADXL345_PCTL_LINK       (1 << 5)
+#define ADXL345_PCTL_AUTO_SLEEP (1 << 4)
+#define ADXL345_PCTL_MEASURE    (1 << 3)
+#define ADXL345_PCTL_SLEEP      (1 << 2)
+#define ADXL345_PCTL_WAKEUP(x)  ((x) & 0x3)
 
-#define XL345_SPI_MOSI_PIN            GPIO_Pin_15
-#define XL345_SPI_MOSI_GPIO_PORT      GPIOB
-#define XL345_SPI_MOSI_GPIO_RCC       RCC_AHB1Periph_GPIOB
-#define XL345_SPI_MOSI_SOURCE         GPIO_PinSource15
-#define XL345_SPI_MOSI_AF             GPIO_AF_SPI2
+/* ADXL345_INT_ENABLE / ADXL345_INT_MAP / ADXL345_INT_SOURCE definition */
+#define ADXL345_DATA_READY      (1 << 7)
+#define ADXL345_SINGLE_TAP      (1 << 6)
+#define ADXL345_DOUBLE_TAP      (1 << 5)
+#define ADXL345_ACTIVITY        (1 << 4)
+#define ADXL345_INACTIVITY      (1 << 3)
+#define ADXL345_FREE_FALL       (1 << 2)
+#define ADXL345_WATERMARK       (1 << 1)
+#define ADXL345_OVERRUN         (1 << 0)
 
-#define XL345_CS_LOW()       			HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_RESET)
-#define XL345_CS_HIGH()      			HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_SET)
+/* ADXL345_DATA_FORMAT definition */
+#define ADXL345_SELF_TEST       (1 << 7)
+#define ADXL345_SPI             (1 << 6)
+#define ADXL345_INT_INVERT      (1 << 5)
+#define ADXL345_FULL_RES        (1 << 3)
+#define ADXL345_JUSTIFY         (1 << 2)
+#define ADXL345_RANGE(x)        ((x) & 0x3)
 
-/* Private function prototypes -----------------------------------------------*/
+/* ADXL345_RANGE(x) options */
+#define ADXL345_RANGE_PM_2G     0
+#define ADXL345_RANGE_PM_4G     1
+#define ADXL345_RANGE_PM_8G     2
+#define ADXL345_RANGE_PM_16G    3
+
+/* ADXL345_FIFO_CTL definition */
+#define ADXL345_FIFO_MODE(x)    (((x) & 0x3) << 6)
+#define ADXL345_TRIGGER         (1 << 5)
+#define ADXL345_SAMPLES(x)      ((x) & 0x1F)
+
+/* ADXL345_FIFO_MODE(x) options */
+#define ADXL345_FIFO_BYPASS     0
+#define ADXL345_FIFO_FIFO       1
+#define ADXL345_FIFO_STREAM     2
+#define ADXL345_FIFO_TRIGGER    3
+
+/* ADXL345_FIFO_STATUS definition */
+#define ADXL345_FIFO_TRIG       (1 << 7)
+#define ADXL345_ENTRIES(x)      ((x) & 0x3F)
+
+/* ADXL345 ID */
+#define ADXL345_ID              0xE5
+
+/* ADXL345 Full Resolution Scale Factor */
+#define ADXL345_SCALE_FACTOR    0.0039
+
+/******************************************************************************/
+/*************************** Types Declarations *******************************/
+/******************************************************************************/
+
+/**
+ * @struct adxl345_dev
+ * @brief ADXL345 Device structure.
+ */
+struct adxl345_dev {
+	/** I2C Descriptor */
+	i2c_desc	*i2c_desc;
+	/** SPI Descriptor */
+	spi_desc	*spi_desc;
+	/** Device Communication type: ADXL345_SPI_COMM, ADXL345_I2C_COMM */
+	uint8_t		communication_type;
+	/** Measurement range */
+	uint8_t		selected_range;
+	/** Enable/Disable Full Resolution */
+	uint8_t		full_resolution_set;
+};
+
+/**
+ * @struct adxl345_init_param
+ * @brief Structure holding the parameters for ADXL345 device initialization.
+ */
+struct adxl345_init_param {
+	/** I2C Initialization structure. */
+	i2c_init_param	i2c_init;
+	/** SPI Initialization structure. */
+	spi_init_param	spi_init;
+	/** Device Communication type: ADXL345_SPI_COMM, ADXL345_I2C_COMM */
+	uint8_t		communication_type;
+	/** Measurement range */
+	uint8_t		selected_range;
+	/** Enable/Disable Full Resolution */
+	uint8_t		full_resolution_set;
+};
+
+/******************************************************************************/
+/************************ Functions Declarations ******************************/
+/******************************************************************************/
+
+/*! Reads the value of a register. */
+uint8_t adxl345_get_register_value(struct adxl345_dev *dev,
+				   uint8_t register_address);
+
+/*! Writes data into a register. */
+void adxl345_set_register_value(struct adxl345_dev *dev,
+				uint8_t register_address,
+				uint8_t register_value);
+
+/*! Init. the comm. peripheral and checks if the ADXL345 part is present. */
+int32_t adxl345_init(struct adxl345_dev **device,
+		     struct adxl345_init_param init_param);
+
+/*! Free the resources allocated by adxl345_init(). */
+int32_t adxl345_remove(struct adxl345_dev *dev);
+
+/*! Places the device into standby/measure mode. */
+void adxl345_set_power_mode(struct adxl345_dev *dev,
+			    uint8_t pwr_mode);
+
+/*! Reads the raw output data of each axis. */
+void adxl345_get_xyz(struct adxl345_dev *dev,
+		     int16_t* x,
+		     int16_t* y,
+		     int16_t* z);
+
+/*! Reads the raw output data of each axis and converts it to g. */
+void adxl345_get_g_xyz(struct adxl345_dev *dev,
+		       float* x,
+		       float* y,
+		       float* z);
+
+/*! Enables/disables the tap detection. */
+void adxl345_set_tap_detection(struct adxl345_dev *dev,
+			       uint8_t tap_type,
+			       uint8_t tap_axes,
+			       uint8_t tap_dur,
+			       uint8_t tap_latent,
+			       uint8_t tap_window,
+			       uint8_t tap_thresh,
+			       uint8_t tap_int);
+
+/*! Enables/disables the activity detection. */
+void adxl345_set_activity_detection(struct adxl345_dev *dev,
+				    uint8_t act_on_off,
+				    uint8_t act_axes,
+				    uint8_t act_ac_dc,
+				    uint8_t act_thresh,
+				    uint8_t act_int);
+
+/*! Enables/disables the inactivity detection. */
+void adxl345_set_inactivity_detection(struct adxl345_dev *dev,
+				      uint8_t inact_on_off,
+				      uint8_t inact_axes,
+				      uint8_t inact_ac_dc,
+				      uint8_t inact_thresh,
+				      uint8_t inact_time,
+				      uint8_t inact_int);
+
+/*! Enables/disables the free-fall detection. */
+void adxl345_set_free_fall_detection(struct adxl345_dev *dev,
+				     uint8_t ff_on_off,
+				     uint8_t ff_thresh,
+				     uint8_t ff_time,
+				     uint8_t ff_int);
+
+/*! Sets an offset value for each axis (Offset Calibration). */
+void adxl345_set_offset(struct adxl345_dev *dev,
+			uint8_t x_offset,
+			uint8_t y_offset,
+			uint8_t z_offset);
+
+/*! Selects the measurement range. */
+void adxl345_set_range_resolution(struct adxl345_dev *dev,
+				  uint8_t g_range,
+				  uint8_t full_res);
+
+#endif	/* __ADXL345_H__ */

@@ -62,7 +62,8 @@ I2C_HandleTypeDef hi2c1;
 
 RTC_HandleTypeDef hrtc;
 
-SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi1_xl345;
+SPI_HandleTypeDef hspi1_xl372;
 SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim6;
@@ -350,20 +351,37 @@ static void MX_SPI1_Init(void)
 	/* USER CODE BEGIN SPI1_Init 1 */
 
 	/* USER CODE END SPI1_Init 1 */
-	/* SPI1 parameter configuration*/
-	hspi1.Instance = SPI1;
-	hspi1.Init.Mode = SPI_MODE_MASTER;
-	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-	hspi1.Init.CRCPolynomial = 8;
-	if (HAL_SPI_Init(&hspi1) != HAL_OK)
+	/* SPI1 for ADXL345 parameter configuration*/
+	/* ADLX345 SPI is MODE = 4*/
+	hspi1_xl345.Instance = SPI1;
+	hspi1_xl345.Init.Mode = SPI_MODE_MASTER;
+	hspi1_xl345.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1_xl345.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1_xl345.Init.CLKPolarity = SPI_POLARITY_HIGH;		// CLKPolarity = 1
+	hspi1_xl345.Init.CLKPhase = SPI_PHASE_2EDGE;			// CLKPhase = 1
+	hspi1_xl345.Init.NSS = SPI_NSS_SOFT;
+	hspi1_xl345.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+	hspi1_xl345.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1_xl345.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1_xl345.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1_xl345.Init.CRCPolynomial = 8;
+
+	/* SPI1 for ADXL372 parameter configuration*/
+	/* ADLX372 SPI is MODE = 0*/
+	hspi1_xl372.Instance = SPI1;
+	hspi1_xl372.Init.Mode = SPI_MODE_MASTER;
+	hspi1_xl372.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1_xl372.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1_xl372.Init.CLKPolarity = SPI_POLARITY_LOW;		// CLKPolarity = 0
+	hspi1_xl372.Init.CLKPhase = SPI_PHASE_1EDGE;			// CLKPhase = 0
+	hspi1_xl372.Init.NSS = SPI_NSS_SOFT;
+	hspi1_xl372.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+	hspi1_xl372.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1_xl372.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1_xl372.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1_xl372.Init.CRCPolynomial = 8;
+
+	if (HAL_SPI_Init(&hspi1_xl345) != HAL_OK || HAL_SPI_Init(&hspi1_xl372) != HAL_OK)
 	{
 		Error_Handler();
 	}

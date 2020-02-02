@@ -244,8 +244,8 @@ void SystemClock_Config(void)
 	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
 			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV16;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV16;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
@@ -687,10 +687,6 @@ void ADXL372_Setup(uint8_t *xl372_spi_error_flg)
 void ADXL372_readXYZ(int16_t *xl372_data_buf)
 {
 	uint8_t xl372_buf[8] =
-	{ };
-	uint8_t fifo_data[3] =
-	{ };
-	uint8_t xl372_fifo_data[3] =
 	{ };
 	uint8_t xl372_fifo_data[3] =
 	{ };

@@ -358,7 +358,7 @@ static void MX_SPI1_Init(void)
 	hspi1_xl345.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
 	hspi1_xl345.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi1_xl345.Init.TIMode = SPI_TIMODE_DISABLE;
-	hspi1_xl345.Init.CRCCalculation = SPI_CRCCALCULATION_ENABLE;
+	hspi1_xl345.Init.CRCCalculation = SPI_CRCCALCULATION_DISNABLE;
 	hspi1_xl345.Init.CRCPolynomial = 7;
 
 	/* SPI1 for ADXL372 parameter configuration*/

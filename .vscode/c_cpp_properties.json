@@ -12,8 +12,16 @@
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "STM32L0xx",
+                "USE_HAL_DRIVER",
+                "ARM_MATCH_CM0+"
             ],
+            "browse": {
+                "path": [
+                    "{workspaceRoot}"
+                ]
+            },
             "windowsSdkVersion": "10.0.18362.0",
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",

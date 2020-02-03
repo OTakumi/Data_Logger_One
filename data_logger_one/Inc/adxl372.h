@@ -63,11 +63,11 @@
  * ADXL372 registers definition
  */
 #define ADXL372_DEVID	0x00u   /* Analog Devices, Inc., accelerometer ID */
-#define ADXL372_DEVID_MST	0x01u   /* Analog Devices MEMS device ID */
-#define ADXL372_PARTID		0x02u   /* Device ID */
-#define ADXL372_REVID		0x03u   /* product revision ID*/
-#define ADXL372_STATUS_1	0x04u   /* Status register 1 */
-#define ADXL372_STATUS_2	0x05u   /* Status register 2 */
+#define ADXL372_DEVID_MST	0x01   /* Analog Devices MEMS device ID */
+#define ADXL372_PARTID		0x02   /* Device ID */
+#define ADXL372_REVID		0x03   /* product revision ID*/
+#define ADXL372_STATUS_1	0x04   /* Status register 1 */
+#define ADXL372_STATUS_2	0x05   /* Status register 2 */
 #define ADXL372_FIFO_ENTRIES_2	0x06u   /* Valid data samples in the FIFO */
 #define ADXL372_FIFO_ENTRIES_1	0x07u   /* Valid data samples in the FIFO */
 #define ADXL372_X_DATA_H	0x08u   /* X-axis acceleration data [11:4] */
@@ -107,16 +107,16 @@
 #define ADXL372_Z_THRESH_ACT2_H		0x36u   /* Z axis Activity2 Threshold [15:8] */
 #define ADXL372_Z_THRESH_ACT2_L		0x37u   /* Z axis Activity2 Threshold [7:0] */
 #define ADXL372_HPF			0x38u   /* High Pass Filter */
-#define ADXL372_FIFO_SAMPLES        	0x39u   /* FIFO Samples */
-#define ADXL372_FIFO_CTL	    	0x3Au   /* FIFO Control */
+#define ADXL372_FIFO_SAMPLES        	0x39   /* FIFO Samples */
+#define ADXL372_FIFO_CTL	    	0x3A   /* FIFO Control */
 #define ADXL372_INT1_MAP	0x3Bu   /* Interrupt 1 mapping control */
 #define ADXL372_INT2_MAP        0x3Cu   /* Interrupt 2 mapping control */
 #define ADXL372_TIMING	       	0x3Du   /* Timing */
 #define ADXL372_MEASURE		0x3Eu   /* Measure */
-#define ADXL372_POWER_CTL       0x3Fu   /* Power control */
-#define ADXL372_SELF_TEST       0x40u   /* Self Test */
-#define ADXL372_RESET           0x41u   /* Reset */
-#define ADXL372_FIFO_DATA	0x42u   /* FIFO Data */
+#define ADXL372_POWER_CTL       0x3F   /* Power control */
+#define ADXL372_SELF_TEST       0x40   /* Self Test */
+#define ADXL372_RESET           0x41   /* Reset */
+#define ADXL372_FIFO_DATA	0x42   /* FIFO Data */
 
 #define ADXL372_DEVID_VAL       0xADu   /* Analog Devices, Inc., accelerometer ID */
 #define ADXL372_MST_DEVID_VAL   0x1Du   /* Analog Devices MEMS device ID */

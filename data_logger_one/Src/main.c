@@ -368,7 +368,7 @@ static void MX_SPI1_Init(void)
 	hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;		// CLKPolarity = 1
 	hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;			// CLKPhase = 1
 	hspi1.Init.NSS = SPI_NSS_SOFT;
-	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
 	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
 	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
 	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -618,7 +618,10 @@ void ADXL345_Setup(uint8_t *xl345_spi_error_flg)
 	}
 }
 
-/*---------- Get ADXL345 Acceleration Data ---------- */
+/**
+ * Configure Get ADXL345 Acceleration Data
+ * @param *xl345_data_buf - The device structure.
+ */
 void ADXL345_readXYZ(int16_t *xl345_data_buf)
 {
 	uint8_t xl345_accel_data[6] =
@@ -641,35 +644,26 @@ void ADXL372_Setup(uint8_t *xl372_spi_error_flg)
 	/*
 	 * ADXL372のデバイスIDが取得できるか確認する
 	 */
-	uint8_t xl372_rx_data_buf[8] =
+	uint8_t xl372_rx_data_buf[5] =
 	{ };
+	uint8_t read_data_buf[5] = {};
 
 	// Setting
 	// FIFOの設定は、スタンバイモードで行う
-	ADXL372_CS_LOW();
-	SPI_Write(ADXL372_POWER_CTL << 1,
-			ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(ADXL372_INSTANT_ON_LOW_TH) |
-			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));
-	SPI_Write(ADXL372_FIFO_SAMPLES << 1, 0xA9);
-	SPI_Write(ADXL372_FIFO_CTL << 1,
-			ADXL372_FIFO_CTL_FORMAT_MODE(ADXL372_XYZ_FIFO) |
-			ADXL372_FIFO_CTL_MODE_MODE(ADXL372_FIFO_STREAMED));
-	SPI_Write(ADXL372_TIMING << 1, ADXL372_ODR_1600HZ);
-	SPI_Write(ADXL372_MEASURE << 1, ADXL372_BW_3200HZ);
+	ADXL372_CS_LOW();								// device reset
+	SPI_Write(ADXL372_POWER_CTL << 1, 0x00);		// device standby
+	// SPI_Write(ADXL372_RESET << 1, ADXL372_RESET_CODE);
+	/* Writing code 0x52 resets the device */
+	SPI_Write(ADXL372_FIFO_CTL << 1, ADXL372_FIFO_CTL_FORMAT_MODE(ADXL372_XYZ_FIFO) |
+		       ADXL372_FIFO_CTL_MODE_MODE(ADXL372_FIFO_STREAMED));
+	SPI_Write(ADXL372_POWER_CTL << 1, ADXL372_POWER_CTL_MODE(ADXL372_INSTANT_ON));		// FIFO設定後、測定モードにする
 	ADXL372_CS_HIGH();
 
-	// FIFO設定後、測定モードにする
 	ADXL372_CS_LOW();
-	SPI_Write(ADXL372_POWER_CTL << 1,
-				ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(ADXL372_INSTANT_ON_LOW_TH) |
-				ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));
-	ADXL372_CS_HIGH();
-
-	// get device id
-	ADXL372_CS_LOW();
-	SPI_Read(ADXL372_PARTID << 1 | B00000001,
+	SPI_Read(ADXL372_POWER_CTL << 1 | 0x01, read_data_buf, sizeof(read_data_buf));
+	SPI_Read(ADXL372_DEVID << 1 | 0x01,
 			xl372_rx_data_buf,
-			sizeof(xl372_rx_data_buf));
+			sizeof(xl372_rx_data_buf));			// get device id
 	ADXL372_CS_HIGH();
 
 	if (xl372_rx_data_buf[1] != ADXL372_PARTID_VAL)
@@ -686,26 +680,40 @@ void ADXL372_Setup(uint8_t *xl372_spi_error_flg)
 /*---------- Get ADXL372 Acceleration Data ---------- */
 void ADXL372_readXYZ(int16_t *xl372_data_buf)
 {
-	uint8_t xl372_buf[8] =
+	uint8_t fifo_status[3] =
+	{ };
+	uint8_t xl372_buf[3] =
 	{ };
 	uint8_t xl372_fifo_data[3] =
 	{ };
 	uint8_t fifo_entry[2] = { };
 
 	ADXL345_CS_LOW();
+	SPI_Read(ADXL372_STATUS_1 << 1 | B00000001, fifo_status, sizeof(fifo_entry));
 	SPI_Read(ADXL372_FIFO_ENTRIES_2 << 1 | B00000001, fifo_entry, sizeof(fifo_entry));
-	SPI_Read((ADXL372_X_DATA_H << 1 | B00000001), xl372_buf, sizeof(xl372_buf));
 	SPI_Read((ADXL372_FIFO_DATA << 1 | B00000001), xl372_fifo_data, sizeof(xl372_fifo_data));
 	ADXL345_CS_HIGH();
 
-	xl372_data_buf[0] = ((uint16_t)xl372_buf[0] << 8) | xl372_buf[1];
-	xl372_data_buf[1] = ((uint16_t)xl372_buf[2] << 8) | xl372_buf[3];
-	xl372_data_buf[2] = ((uint16_t)xl372_buf[4] << 8) | xl372_buf[5];
+	ADXL345_CS_LOW();
+	SPI_Read((ADXL372_X_DATA_H << 1 | B00000001), xl372_buf, sizeof(xl372_buf));
+	ADXL345_CS_HIGH();
+	xl372_data_buf[0] = ((uint16_t)xl372_buf[1] << 8) | xl372_buf[2];
+
+	ADXL345_CS_LOW();
+	SPI_Read((ADXL372_Y_DATA_H << 1 | B00000001), xl372_buf, sizeof(xl372_buf));
+	ADXL345_CS_HIGH();
+	xl372_data_buf[1] = ((uint16_t)xl372_buf[1] << 8) | xl372_buf[2];
+
+	ADXL345_CS_LOW();
+	SPI_Read((ADXL372_Z_DATA_H << 1 | B00000001), xl372_buf, sizeof(xl372_buf));
+	ADXL345_CS_HIGH();
+	xl372_data_buf[2] = ((uint16_t)xl372_buf[1] << 8) | xl372_buf[2];
 }
 
 void SPI_Read(uint8_t addr, uint8_t *data_buf, uint8_t n)
 {
-	data_buf[0] = addr ;
+	data_buf[0] = addr;
+	for(int8_t i = 1; i < n; i++) data_buf[n] = 0x00;
 
 	HAL_Delay(5);
 	HAL_SPI_Receive(&hspi1, data_buf, n, TIME_OUT);

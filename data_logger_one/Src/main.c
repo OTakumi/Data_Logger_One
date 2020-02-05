@@ -91,6 +91,7 @@ void XL345_readXYZ(int16_t*);
 void ADXL345_SPI_Read(uint8_t*, uint8_t);
 void ADXL345_SPI_Write(uint8_t, uint8_t);
 void ADXL372_init(uint8_t*);
+void adxl372_sttings(void);
 void XL372_readXYZ(int16_t *);
 uint16_t ADXL372_SPI_Read(uint8_t);
 void ADXL372_SPI_Write(uint8_t, uint8_t);
@@ -671,6 +672,9 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	xl372_rx_data_buf[0] = ADXL372_PARTID << 1 | 0x01;
 	xl372_rx_data_buf[1] = 0x00;
 
+	// setting the function
+
+	// get device id
 	ADXL372_CS_LOW();
 	HAL_Delay(5);
 	HAL_SPI_Receive(&hspi1, xl372_rx_data_buf, data_size, TIME_OUT);
@@ -688,6 +692,12 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 		*xl372_spi_error_flg = 0;
 	}
 }
+
+void adxl372_sttings(void)
+{
+
+}
+
 /*---------- Get ADXL372 Acceleration Data ---------- */
 void XL372_readXYZ(int16_t *xl372_data_buf)
 {

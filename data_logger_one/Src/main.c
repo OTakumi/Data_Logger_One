@@ -89,7 +89,7 @@ void Read_Sw_Status(int8_t*);
 void ADXL345_init(uint8_t*);
 void XL345_readXYZ(int16_t*);
 void ADXL345_SPI_Read(uint8_t*, uint8_t);
-void ADXL345_SPI_Write(uint8_t, uint8_t);
+void ADXL345_SPI_Write(uint8_t*, uint8_t);
 void ADXL372_init(uint8_t*);
 void XL372_readXYZ(int16_t *);
 uint16_t ADXL372_SPI_Read(uint8_t);
@@ -647,7 +647,7 @@ void ADXL345_SPI_Read(uint8_t *addr, uint8_t buf_size)
 	XL345_CS_HIGH();
 }
 
-void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
+void ADXL345_SPI_Write(uint8_t *addr, uint8_t data)
 {
 	uint8_t xl372_write_data_buf[2] = { };
 	xl372_write_data_buf[0] = addr & 0x7f;

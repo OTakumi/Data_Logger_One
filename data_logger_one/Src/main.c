@@ -655,11 +655,11 @@ void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 	xl372_write_data_buf[0] = addr;
 	xl372_write_data_buf[1] = data;
 
-	XL372_CS_LOW();
+	XL345_CS_LOW();
 	HAL_Delay(5);
 	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, sizeof(xl372_write_data_buf), TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	XL345_CS_HIGH();
 }
 
 /*--------------------------------------
@@ -675,16 +675,16 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	{ };
 	uint16_t data_size = 0x02;
 
-	xl372_rx_data_buf[0] = XL372_PARTID << 1 | 0x01;
+	xl372_rx_data_buf[0] = ADXL372_PARTID << 1 | 0x01;
 	xl372_rx_data_buf[1] = 0x00;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
 	HAL_SPI_Receive(&hspi1, xl372_rx_data_buf, data_size, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 
-	if (xl372_rx_data_buf[1] != XL372_I_M_DEVID)
+	if (xl372_rx_data_buf[1] != ADXL372_PARTID_VAL)
 	{
 		Uart_Message("ADXL372 SPI Error\r\n");
 		*xl372_spi_error_flg = 1;
@@ -701,15 +701,15 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 	uint8_t xl372_buf[8] =
 	{ };
 
-	uint8_t fifo_ctl_addr = XL372_FIFO_CTL;
+	uint8_t fifo_ctl_addr = ADXL372_FIFO_CTL;
 	uint8_t fifo_ctl_data = 0x02;
 
-	// FIFO_CTL�ｿｽﾉ設抵ｿｽl�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+	// FIFO_CTL
 	ADXL372_SPI_Write(fifo_ctl_addr, fifo_ctl_data);
 	ADXL372_SPI_Read(fifo_ctl_addr);
-	ADXL372_SPI_Read(XL372_STATUS);
+	ADXL372_SPI_Read(ADXL372_STATUS_1);
 
-	xl372_buf[0] = ADXL372_SPI_Read(XL372_FIFO_ENTRIES2);
+	xl372_buf[0] = ADXL372_SPI_Read(ADXL372_FIFO_ENTRIES_2);
 
 	Uart_Message("XL372 : ");
 	xl372_data_buf[0] = ((uint16_t) xl372_buf[1] << 8) + xl372_buf[0];
@@ -729,11 +729,11 @@ uint16_t ADXL372_SPI_Read(uint8_t addr)
 	xl372_read_data_buf[0] = addr << 1 | 0x01;
 	int16_t xl372_acc_data = 0;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
 	HAL_SPI_Receive(&hspi1, xl372_read_data_buf, 0x11, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 
 	xl372_acc_data = xl372_read_data_buf[0];
 
@@ -746,11 +746,11 @@ void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
 	xl372_write_data_buf[0] = addr << 1 ;
 	xl372_write_data_buf[1] = data;
 
-	XL372_CS_LOW();
+	ADXL372_CS_LOW();
 	HAL_Delay(5);
 	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, 0x08, TIME_OUT);
 	HAL_Delay(5);
-	XL372_CS_HIGH();
+	ADXL372_CS_HIGH();
 }
 
 /*---------- Get Temperature and Humidity ---------- */

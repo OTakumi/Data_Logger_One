@@ -571,32 +571,30 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 	/*
 	 *  ADXL345 setting
 	 */
+
+	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0X0b);		//BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
+	ADXL345_SPI_Write(XL345_POWER_CTL & 0x7f, 0x08);		//BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
+	ADXL345_SPI_Write(XL345_BW_RATE & 0x7f, 0x0e);			//low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
+	ADXL345_SPI_Write(XL345_INT_ENABLE & 0x7f, 0x00);		//Interrupt function setting: not enabled
+	ADXL345_SPI_Write(XL345_INT_MAP & 0x7f, 0x00); 			//Set the interrupt mapping to the INT1 pin or the INT2 pin.
+	ADXL345_SPI_Write(XL345_FIFO_CTL & 0x7f, 0x80);
+
+	ADXL345_SPI_Write(XL345_OFSX & 0x7f, 0x00); 					//XYZ offset adjustment
+	ADXL345_SPI_Write(XL345_OFSY & 0x7f, 0x00);
+	ADXL345_SPI_Write(XL345_OFSZ & 0x7f, 0x00);
+
+	// Get device id
 	uint8_t xl345_read_data[3] = { };
 	xl345_read_data[0] = XL345_DEVID | 0xc0;
 	xl345_read_data[1] = 0x00;
-	uint16_t data_size = 0x03;
 
-	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0X0b);		//BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
-	ADXL345_SPI_Write(XL345_POWER_CTL, 0x08);		//BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
-	ADXL345_SPI_Write(XL345_BW_RATE, 0x0e);			//low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
-	ADXL345_SPI_Write(XL345_INT_ENABLE, 0x00);		//Interrupt function setting: not enabled
-	ADXL345_SPI_Write(XL345_INT_MAP, 0x00); 		//Set the interrupt mapping to the INT1 pin or the INT2 pin.
-	ADXL345_SPI_Write(XL345_FIFO_CTL, 0x80);
-
-	ADXL345_SPI_Write(XL345_OFSX, 0x00); 			//XYZ offset adjustment
-	ADXL345_SPI_Write(XL345_OFSY, 0x00);
-	ADXL345_SPI_Write(XL345_OFSZ, 0x00);
-
-	// Get device id
 	XL345_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl345_read_data, data_size, TIME_OUT);
+	HAL_SPI_Receive(&hspi1, xl345_read_data, sizeof(xl345_read_data), TIME_OUT);
 	HAL_Delay(5);
 	XL345_CS_HIGH();
 
-	uint8_t device_id = xl345_read_data[0] << 1;
-	uint8_t data_buf = xl345_read_data[1] >> 7;
-	device_id = device_id | data_buf;
+	uint8_t device_id = xl345_read_data[1];
 
 	if (device_id != XL345_I_M_DEVID)
 	{
@@ -614,10 +612,11 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 void XL345_readXYZ(int16_t *xl345_data_buf)
 {
 	// Setting the data format
-	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0x0f);
+	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0x0f);
 
+	// Read multibit
 	uint8_t xl345_accel_data[6] = { };
-	xl345_accel_data[0] = XL345_DATAX0;
+	xl345_accel_data[0] = XL345_DATAX0 | 0xc0;
 
 	/* data read multi bits XL345_DATAX0 ~ XL345_DATAZ1 */
 	ADXL345_SPI_Read(xl345_accel_data, sizeof(xl345_accel_data));
@@ -635,15 +634,17 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 	Uart_Message(MESSAGE);
 }
 
-void ADXL345_SPI_Read(uint8_t *addr, uint8_t buf_size)
+void ADXL345_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 {
+	/*
 	uint8_t xl345_read_data_buf[10] = {  };
-	xl345_read_data_buf[0] = *addr | 0xc0;			// Read multibit
+	xl345_read_data_buf[0] = *addr;
 	xl345_read_data_buf[1] = 0x00;
+	*/
 
 	XL345_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl345_read_data_buf, buf_size, TIME_OUT);
+	HAL_SPI_Receive(&hspi1, read_data_buf, buf_size, TIME_OUT);
 	HAL_Delay(5);
 	XL345_CS_HIGH();
 }
@@ -651,7 +652,7 @@ void ADXL345_SPI_Read(uint8_t *addr, uint8_t buf_size)
 void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 {
 	uint8_t xl372_write_data_buf[2] = { };
-	xl372_write_data_buf[0] = addr & 0x7f;
+	xl372_write_data_buf[0] = addr;
 	xl372_write_data_buf[1] = data;
 
 	XL372_CS_LOW();

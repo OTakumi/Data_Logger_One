@@ -16,15 +16,15 @@
  *
  ******************************************************************************
  * @System Detail
- * ÅE ÉWÉÉÉCÉçÉZÉìÉTÅ[Ç∆â∑éºìxÉZÉìÉTÅ[Ç©ÇÁÉfÅ[É^ÇéÊìæÇ∑ÇÈ
- * ÅE éÊìæÇµÇΩÉfÅ[É^Çcsvå`éÆÇ≈FlashMemoryÇ…ï€ë∂Ç∑ÇÈ
- * ÅE FlashMemoryÇ…ï€ë∂ÇµÇΩÉfÅ[É^ÇUARTÇ≈PCÇ…ëóêMÇ∑ÇÈ
- * ÅE ë™íËíÜÇ…Ç‡UARTÇ≈ëóêMÅAämîFï\é¶Ç≈Ç´ÇÈ
- * ÅE ÉWÉÉÉCÉçÉfÅ[É^ÇÕ0.1msÇ≤Ç∆Ç…éÊìæÇ∑ÇÈ
- * ÅE â∑ìxÉfÅ[É^ÇÕ1minÇ≤Ç∆Ç…éÊìæÇ∑ÇÈ
- * ÅE SWÇ≈ÉÇÅ[Éhêÿë÷Ç∑ÇÈ
- * 	ÅE ÉÇÅ[Éh1ÅFFlashMemoryÇ…ï€ë∂ÇµÇΩÉfÅ[É^ÇPCÇ…ëóêMÇ∑ÇÈÉÇÅ[Éh
- * 	ÅE ÉÇÅ[Éh2ÅFí èÌë™íËÇçsÇ§
+ * ÔøΩE ÔøΩWÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩZÔøΩÔøΩÔøΩTÔøΩ[ÔøΩ∆âÔøΩÔøΩÔøΩÔøΩxÔøΩZÔøΩÔøΩÔøΩTÔøΩ[ÔøΩÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩÊìæÔøΩÔøΩÔøΩÔøΩ
+ * ÔøΩE ÔøΩÊìæÔøΩÔøΩÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩcsvÔøΩ`ÔøΩÔøΩÔøΩÔøΩFlashMemoryÔøΩ…ï€ëÔøΩÔøΩÔøΩÔøΩÔøΩ
+ * ÔøΩE FlashMemoryÔøΩ…ï€ëÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩUARTÔøΩÔøΩPCÔøΩ…ëÔøΩÔøΩMÔøΩÔøΩÔøΩÔøΩ
+ * ÔøΩE ÔøΩÔøΩÔøΩËíÜÔøΩ…ÇÔøΩUARTÔøΩ≈ëÔøΩÔøΩMÔøΩAÔøΩmÔøΩFÔøΩ\ÔøΩÔøΩÔøΩ≈ÇÔøΩÔøΩÔøΩ
+ * ÔøΩE ÔøΩWÔøΩÔøΩÔøΩCÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩ0.1msÔøΩÔøΩÔøΩ∆Ç…éÊìæÔøΩÔøΩÔøΩÔøΩ
+ * ÔøΩE ÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩ1minÔøΩÔøΩÔøΩ∆Ç…éÊìæÔøΩÔøΩÔøΩÔøΩ
+ * ÔøΩE SWÔøΩ≈ÉÔøΩÔøΩ[ÔøΩhÔøΩÿë÷ÇÔøΩÔøΩÔøΩ
+ * 	ÔøΩE ÔøΩÔøΩÔøΩ[ÔøΩh1ÔøΩFFlashMemoryÔøΩ…ï€ëÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩPCÔøΩ…ëÔøΩÔøΩMÔøΩÔøΩÔøΩÈÉÇÔøΩ[ÔøΩh
+ * 	ÔøΩE ÔøΩÔøΩÔøΩ[ÔøΩh2ÔøΩFÔøΩ èÌë™ÔøΩÔøΩÔøΩÔøΩsÔøΩÔøΩ
  ******************************************************************************
  */
 /* USER CODE END Header */
@@ -151,48 +151,48 @@ int main(void)
 		ADXL372_init(&xl372_spi_error_flg);
 	}
 
-	// Mode SWÇÃèÛë‘ÇéÊìæÇµÅAModeêÿë÷Ç∑ÇÈ
-	// SW = ON ÇÃèÍçáÅAFlashMemoryÇ©ÇÁUARTÇ≈ÉfÅ[É^ëóêMÉÇÅ[Éh
-	// SW = OFFÇÃèÍçáÅAÉfÅ[É^éÊìæÉÇÅ[Éh
+	// Mode SWÔøΩÃèÔøΩ‘ÇÔøΩÔøΩÊìæÔøΩÔøΩÔøΩAModeÔøΩÿë÷ÇÔøΩÔøΩÔøΩ
+	// SW = ON ÔøΩÃèÍçáÔøΩAFlashMemoryÔøΩÔøΩÔøΩÔøΩUARTÔøΩ≈ÉfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩMÔøΩÔøΩÔøΩ[ÔøΩh
+	// SW = OFFÔøΩÃèÍçáÔøΩAÔøΩfÔøΩ[ÔøΩ^ÔøΩÊìæÔøΩÔøΩÔøΩ[ÔøΩh
 	Read_Sw_Status(&sw_flag);
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	// Mode SWÇ™ON(SW_Flag = 1)ÇÃÇ∆Ç´
+	// Mode SWÔøΩÔøΩON(SW_Flag = 1)ÔøΩÃÇ∆ÇÔøΩ
 	if (sw_flag == 1)
 	{
 
 	}
 
-	// Mode SWÇ™OFF(SW_Flag = 0)ÇÃÇ∆Ç´
+	// Mode SWÔøΩÔøΩOFF(SW_Flag = 0)ÔøΩÃÇ∆ÇÔøΩ
 	if (sw_flag == 0)
 	{
 		while (1)
 		{
-			// â∑ìxÉfÅ[É^ÇéÊìæ
+			// ÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩÊìæ
 			uint16_t humid = 0;
 			float temp = 0.0;
 			Get_Temp_Humid(&humid, &temp);
 
-			// ADXL345Ç©ÇÁXé≤, Yé≤, Zé≤ÇÃâ¡ë¨ìxÉfÅ[É^ÇéÊìæÇ∑ÇÈ
+			// ADXL345ÔøΩÔøΩÔøΩÔøΩXÔøΩÔøΩ, YÔøΩÔøΩ, ZÔøΩÔøΩÔøΩÃâÔøΩÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩÊìæÔøΩÔøΩÔøΩÔøΩ
 			int16_t xl345_data_buf[3] =
 			{ };
 			int16_t *xl345_data = 0;
 			xl345_data = xl345_data_buf;
 			XL345_readXYZ(xl345_data);
 
-			// ADXL372Ç©ÇÁXé≤, Yé≤, Zé≤ÇÃâ¡ë¨ìxÉfÅ[É^ÇéÊìæÇ∑ÇÈ
+			// ADXL372ÔøΩÔøΩÔøΩÔøΩXÔøΩÔøΩ, YÔøΩÔøΩ, ZÔøΩÔøΩÔøΩÃâÔøΩÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩÊìæÔøΩÔøΩÔøΩÔøΩ
 			int16_t xl372_data_buf[3] =
 						{ };
 			int16_t *xl372_data = 0;
 			xl372_data = xl372_data_buf;
 			XL372_readXYZ(xl372_data);
 
-			// éÊìæÇµÇΩÉfÅ[É^ÇCSVå`éÆÇ…Ç‹Ç∆ÇﬂÇÈ
+			// ÔøΩÊìæÔøΩÔøΩÔøΩÔøΩÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩCSVÔøΩ`ÔøΩÔøΩÔøΩ…Ç‹Ç∆ÇﬂÇÔøΩ
 
-			// FlashMemoryÇ…ÉfÅ[É^Çäiî[Ç∑ÇÈ
+			// FlashMemoryÔøΩ…ÉfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩiÔøΩ[ÔøΩÔøΩÔøΩÔøΩ
 			/* USER CODE END WHILE */
 
 			/* USER CODE BEGIN 3 */
@@ -566,26 +566,24 @@ void Read_Sw_Status(int8_t* sw_status)
 /*--------------------------------------
  * ADXL345
  * -------------------------------------*/
-/*---------- Init ---------- */
 void ADXL345_init(uint8_t *xl345_spi_error_flg)
 {
 	/*
-	 * ADXL345ÇÃÉfÉoÉCÉXIDÇ™éÊìæÇ≈Ç´ÇÈÇ©ämîFÇ∑ÇÈ
+	 *  ADXL345 setting
 	 */
-	uint8_t xl345_read_data[3] =
-	{ };
+	uint8_t xl345_read_data[3] = { };
 	xl345_read_data[0] = XL345_DEVID | 0xc0;
 	xl345_read_data[1] = 0x00;
 	uint16_t data_size = 0x03;
 
-	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0X0b); //BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
-	ADXL345_SPI_Write(XL345_POWER_CTL, 0x08); //BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
-	ADXL345_SPI_Write(XL345_BW_RATE, 0x0e); //low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
-	ADXL345_SPI_Write(XL345_INT_ENABLE, 0x00); //Interrupt function setting: not enabled
-	ADXL345_SPI_Write(XL345_INT_MAP, 0x00); //Set the interrupt mapping to the INT1 pin or the INT2 pin.
+	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0X0b);		//BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
+	ADXL345_SPI_Write(XL345_POWER_CTL, 0x08);		//BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
+	ADXL345_SPI_Write(XL345_BW_RATE, 0x0e);			//low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
+	ADXL345_SPI_Write(XL345_INT_ENABLE, 0x00);		//Interrupt function setting: not enabled
+	ADXL345_SPI_Write(XL345_INT_MAP, 0x00); 		//Set the interrupt mapping to the INT1 pin or the INT2 pin.
 	ADXL345_SPI_Write(XL345_FIFO_CTL, 0x80);
 
-	ADXL345_SPI_Write(XL345_OFSX, 0x00); //XYZ offset adjustment
+	ADXL345_SPI_Write(XL345_OFSX, 0x00); 			//XYZ offset adjustment
 	ADXL345_SPI_Write(XL345_OFSY, 0x00);
 	ADXL345_SPI_Write(XL345_OFSZ, 0x00);
 
@@ -615,11 +613,10 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 /*---------- Get ADXL345 Acceleration Data ---------- */
 void XL345_readXYZ(int16_t *xl345_data_buf)
 {
-	// Data FormatÉåÉWÉXÉ^èëçûÇ›
+	// Setting the data format
 	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0x0f);
 
-	uint8_t xl345_accel_data[6] =
-	{ };
+	uint8_t xl345_accel_data[6] = { };
 
 	xl345_accel_data[0] = ADXL345_SPI_Read(XL345_DATAX0);
 	xl345_accel_data[1] = ADXL345_SPI_Read(XL345_DATAX1);
@@ -629,17 +626,6 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 
 	xl345_accel_data[4] = ADXL345_SPI_Read(XL345_DATAZ0);
 	xl345_accel_data[5] = ADXL345_SPI_Read(XL345_DATAZ1);
-
-	/*
-	xl345_accel_data[6] = ADXL345_SPI_Read(XL345_FIFO_CTL);
-
-	xl345_accel_data[0] = xl345_accel_data[0] << 1 & xl345_accel_data[1] >> 7;
-	xl345_accel_data[1] = xl345_accel_data[1] << 1 & xl345_accel_data[2] >> 7;
-	xl345_accel_data[2] = xl345_accel_data[2] << 1 & xl345_accel_data[3] >> 7;
-	xl345_accel_data[3] = xl345_accel_data[3] << 1 & xl345_accel_data[4] >> 7;
-	xl345_accel_data[4] = xl345_accel_data[4] << 1 & xl345_accel_data[5] >> 7;
-	xl345_accel_data[5] = xl345_accel_data[5] << 1 & xl345_accel_data[6] >> 7;
-	*/
 
 	xl345_data_buf[0] = ((uint16_t)xl345_accel_data[1] << 8) + xl345_accel_data[0];
 	xl345_data_buf[1] = ((uint16_t)xl345_accel_data[3] << 8) + xl345_accel_data[2];
@@ -691,7 +677,7 @@ void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 void ADXL372_init(uint8_t *xl372_spi_error_flg)
 {
 	/*
-	 * ADXL372ÇÃÉfÉoÉCÉXIDÇ™éÊìæÇ≈Ç´ÇÈÇ©ämîFÇ∑ÇÈ
+	 * ADXL372ÔøΩÃÉfÔøΩoÔøΩCÔøΩXIDÔøΩÔøΩÔøΩÊìæÔøΩ≈ÇÔøΩÔøΩÈÇ©ÔøΩmÔøΩFÔøΩÔøΩÔøΩÔøΩ
 	 */
 	uint8_t xl372_rx_data_buf[2] =
 	{ };
@@ -726,7 +712,7 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 	uint8_t fifo_ctl_addr = XL372_FIFO_CTL;
 	uint8_t fifo_ctl_data = 0x02;
 
-	// FIFO_CTLÇ…ê›íËílÇèëçûÇ›
+	// FIFO_CTLÔøΩ…ê›íÔøΩlÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
 	ADXL372_SPI_Write(fifo_ctl_addr, fifo_ctl_data);
 	ADXL372_SPI_Read(fifo_ctl_addr);
 	ADXL372_SPI_Read(XL372_STATUS);
@@ -779,7 +765,7 @@ void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
 void Get_Temp_Humid(uint16_t *humid, float *temp)
 {
 	/*
-	 * si7006Ç©ÇÁâ∑ìxÅAéºìxÉfÅ[É^ÇéÊìæÇ∑ÇÈ
+	 * si7006ÔøΩÔøΩÔøΩÁâ∑ÔøΩxÔøΩAÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩÊìæÔøΩÔøΩÔøΩÔøΩ
 	 */
 	uint8_t i2c_tx_buf[8] =
 	{ 0x00 };
@@ -791,23 +777,23 @@ void Get_Temp_Humid(uint16_t *humid, float *temp)
 	i2c_tx_buf[1] = Temperature_Not_Hold;
 	uint16_t device_addr = Si7006_ADDERSS << 1;
 
-	// â∑ìxÉfÅ[É^ÇéÊìæ íPà ÅFÅé
-	// åvéZéÆÇÕÉfÅ[É^ÉVÅ[ÉgéQè∆
+	// ÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩÔøΩÊìæ ÔøΩPÔøΩ ÅFÔøΩÔøΩ
+	// ÔøΩvÔøΩZÔøΩÔøΩÔøΩÕÉfÔøΩ[ÔøΩ^ÔøΩVÔøΩ[ÔøΩgÔøΩQÔøΩÔøΩ
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[1], 0x08,
 			TIME_OUT);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Temp_data_buf, 0x08, TIME_OUT);
 	*temp = (Temp_data_buf[0] << 8) + Temp_data_buf[2];
 	*temp = ((175.72 * (*temp)) / 65536) - 46.85;
 
-	// éºìxÉfÅ[É^éÊìæ íPà ÅF%
-	// åvéZéÆÇÕÉfÅ[É^ÉVÅ[ÉgéQè∆
+	// ÔøΩÔøΩÔøΩxÔøΩfÔøΩ[ÔøΩ^ÔøΩÊìæ ÔøΩPÔøΩ ÅF%
+	// ÔøΩvÔøΩZÔøΩÔøΩÔøΩÕÉfÔøΩ[ÔøΩ^ÔøΩVÔøΩ[ÔøΩgÔøΩQÔøΩÔøΩ
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[0], 0x08,
 			TIME_OUT);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Humid_data_buf, 0x08, TIME_OUT);
 	*humid = (Humid_data_buf[0] << 8) + Humid_data_buf[2];
 	*humid = ((125 * (*humid)) / 65536) - 6;
 
-	// éÊìæÉfÅ[É^ÇUARTÇ≈ï\é¶
+	// ÔøΩÊìæÔøΩfÔøΩ[ÔøΩ^ÔøΩÔøΩUARTÔøΩ≈ï\ÔøΩÔøΩ
 	sprintf(MESSAGE, "Temp=%f, ", *temp);
 	Uart_Message(MESSAGE);
 	sprintf(MESSAGE, "Humid=%d\r\n", *humid);
@@ -818,7 +804,7 @@ void Get_Temp_Humid(uint16_t *humid, float *temp)
 void Led_Bring(void)
 {
 	/*
-	 * LEDì_ñ≈ê›íË
+	 * LEDÔøΩ_ÔøΩ≈ê›íÔøΩ
 	 */
 
 	HAL_GPIO_WritePin(Mode_LED_GPIO_Port, Mode_LED_Pin, GPIO_PIN_SET);
@@ -829,9 +815,9 @@ void Led_Bring(void)
 void Uart_Message(char *message)
 {
 	/*
-	 * UARTÇ≈ÉÅÉbÉZÅ[ÉWÇëóêM
-	 * à¯êîÅFmessage
-	 * 		ï\é¶ÇµÇΩÇ¢ï∂éöóÒ
+	 * UARTÔøΩ≈ÉÔøΩÔøΩbÔøΩZÔøΩ[ÔøΩWÔøΩëóêM
+	 * ÔøΩÔøΩÔøΩÔøΩÔøΩFmessage
+	 * 		ÔøΩ\ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
 	 */
 	char tx_message[0xff] =
 	{ 0 };

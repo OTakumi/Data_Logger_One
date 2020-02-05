@@ -16,15 +16,15 @@
  *
  ******************************************************************************
  * @System Detail
- * �E �W���C���Z���T�[�Ɖ����x�Z���T�[����f�[�^���擾����
- * �E �擾�����f�[�^��csv�`����FlashMemory�ɕۑ�����
- * �E FlashMemory�ɕۑ������f�[�^��UART��PC�ɑ��M����
- * �E ���蒆�ɂ�UART�ő��M�A�m�F�\���ł���
- * �E �W���C���f�[�^��0.1ms���ƂɎ擾����
- * �E ���x�f�[�^��1min���ƂɎ擾����
- * �E SW�Ń��[�h�ؑւ���
- * 	�E ���[�h1�FFlashMemory�ɕۑ������f�[�^��PC�ɑ��M���郂�[�h
- * 	�E ���[�h2�F�ʏ푪����s��
+ * �ｿｽE �ｿｽW�ｿｽ�ｿｽ�ｿｽC�ｿｽ�ｿｽ�ｿｽZ�ｿｽ�ｿｽ�ｿｽT�ｿｽ[�ｿｽﾆ会ｿｽ�ｿｽ�ｿｽ�ｿｽx�ｿｽZ�ｿｽ�ｿｽ�ｿｽT�ｿｽ[�ｿｽ�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+ * �ｿｽE �ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽcsv�ｿｽ`�ｿｽ�ｿｽ�ｿｽ�ｿｽFlashMemory�ｿｽﾉ保托ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+ * �ｿｽE FlashMemory�ｿｽﾉ保托ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽUART�ｿｽ�ｿｽPC�ｿｽﾉ托ｿｽ�ｿｽM�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+ * �ｿｽE �ｿｽ�ｿｽ�ｿｽ闥��ｿｽﾉゑｿｽUART�ｿｽﾅ托ｿｽ�ｿｽM�ｿｽA�ｿｽm�ｿｽF�ｿｽ\�ｿｽ�ｿｽ�ｿｽﾅゑｿｽ�ｿｽ�ｿｽ
+ * �ｿｽE �ｿｽW�ｿｽ�ｿｽ�ｿｽC�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ0.1ms�ｿｽ�ｿｽ�ｿｽﾆに取得�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+ * �ｿｽE �ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ1min�ｿｽ�ｿｽ�ｿｽﾆに取得�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+ * �ｿｽE SW�ｿｽﾅ�ｿｽ�ｿｽ[�ｿｽh�ｿｽﾘ替ゑｿｽ�ｿｽ�ｿｽ
+ * 	�ｿｽE �ｿｽ�ｿｽ�ｿｽ[�ｿｽh1�ｿｽFFlashMemory�ｿｽﾉ保托ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽPC�ｿｽﾉ托ｿｽ�ｿｽM�ｿｽ�ｿｽ�ｿｽ驛ゑｿｽ[�ｿｽh
+ * 	�ｿｽE �ｿｽ�ｿｽ�ｿｽ[�ｿｽh2�ｿｽF�ｿｽﾊ常測�ｿｽ�ｿｽ�ｿｽ�ｿｽs�ｿｽ�ｿｽ
  ******************************************************************************
  */
 /* USER CODE END Header */
@@ -89,7 +89,7 @@ void Read_Sw_Status(int8_t*);
 void ADXL345_init(uint8_t*);
 void XL345_readXYZ(int16_t*);
 void ADXL345_SPI_Read(uint8_t*, uint8_t);
-void ADXL345_SPI_Write(uint8_t*, uint8_t);
+void ADXL345_SPI_Write(uint8_t, uint8_t);
 void ADXL372_init(uint8_t*);
 void XL372_readXYZ(int16_t *);
 uint16_t ADXL372_SPI_Read(uint8_t);
@@ -151,48 +151,48 @@ int main(void)
 		ADXL372_init(&xl372_spi_error_flg);
 	}
 
-	// Mode SW�̏�Ԃ��擾���AMode�ؑւ���
-	// SW = ON �̏ꍇ�AFlashMemory����UART�Ńf�[�^���M���[�h
-	// SW = OFF�̏ꍇ�A�f�[�^�擾���[�h
+	// Mode SW�ｿｽﾌ擾ｿｽﾔゑｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽAMode�ｿｽﾘ替ゑｿｽ�ｿｽ�ｿｽ
+	// SW = ON �ｿｽﾌ場合�ｿｽAFlashMemory�ｿｽ�ｿｽ�ｿｽ�ｿｽUART�ｿｽﾅデ�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽM�ｿｽ�ｿｽ�ｿｽ[�ｿｽh
+	// SW = OFF�ｿｽﾌ場合�ｿｽA�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ[�ｿｽh
 	Read_Sw_Status(&sw_flag);
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	// Mode SW��ON(SW_Flag = 1)�̂Ƃ�
+	// Mode SW�ｿｽ�ｿｽON(SW_Flag = 1)�ｿｽﾌとゑｿｽ
 	if (sw_flag == 1)
 	{
 
 	}
 
-	// Mode SW��OFF(SW_Flag = 0)�̂Ƃ�
+	// Mode SW�ｿｽ�ｿｽOFF(SW_Flag = 0)�ｿｽﾌとゑｿｽ
 	if (sw_flag == 0)
 	{
 		while (1)
 		{
-			// ���x�f�[�^���擾
+			// �ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ
 			uint16_t humid = 0;
 			float temp = 0.0;
 			Get_Temp_Humid(&humid, &temp);
 
-			// ADXL345����X��, Y��, Z���̉����x�f�[�^���擾����
+			// ADXL345�ｿｽ�ｿｽ�ｿｽ�ｿｽX�ｿｽ�ｿｽ, Y�ｿｽ�ｿｽ, Z�ｿｽ�ｿｽ�ｿｽﾌ会ｿｽ�ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 			int16_t xl345_data_buf[3] =
 			{ };
 			int16_t *xl345_data = 0;
 			xl345_data = xl345_data_buf;
 			XL345_readXYZ(xl345_data);
 
-			// ADXL372����X��, Y��, Z���̉����x�f�[�^���擾����
+			// ADXL372�ｿｽ�ｿｽ�ｿｽ�ｿｽX�ｿｽ�ｿｽ, Y�ｿｽ�ｿｽ, Z�ｿｽ�ｿｽ�ｿｽﾌ会ｿｽ�ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 			int16_t xl372_data_buf[3] =
 						{ };
 			int16_t *xl372_data = 0;
 			xl372_data = xl372_data_buf;
 			XL372_readXYZ(xl372_data);
 
-			// �擾�����f�[�^��CSV�`���ɂ܂Ƃ߂�
+			// �ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽCSV�ｿｽ`�ｿｽ�ｿｽ�ｿｽﾉまとめゑｿｽ
 
-			// FlashMemory�Ƀf�[�^���i�[����
+			// FlashMemory�ｿｽﾉデ�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽi�ｿｽ[�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 			/* USER CODE END WHILE */
 
 			/* USER CODE BEGIN 3 */
@@ -355,8 +355,8 @@ static void MX_SPI1_Init(void)
 	hspi1.Init.Mode = SPI_MODE_MASTER;
 	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
 	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+	hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
 	hspi1.Init.NSS = SPI_NSS_SOFT;
 	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
 	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -617,9 +617,10 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 	ADXL345_SPI_Write(XL345_DATA_FORMAT, 0x0f);
 
 	uint8_t xl345_accel_data[6] = { };
+	xl345_accel_data[0] = XL345_DATAX0;
 
 	/* data read multi bits XL345_DATAX0 ~ XL345_DATAZ1 */
-	xl345_accel_data[0] = ADXL345_SPI_Read(XL345_DATAX0, sizeof(xl345_accel_data));
+	ADXL345_SPI_Read(xl345_accel_data, sizeof(xl345_accel_data));
 
 	xl345_data_buf[0] = ((uint16_t)xl345_accel_data[1] << 8) + xl345_accel_data[0];
 	xl345_data_buf[1] = ((uint16_t)xl345_accel_data[3] << 8) + xl345_accel_data[2];
@@ -637,7 +638,7 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 void ADXL345_SPI_Read(uint8_t *addr, uint8_t buf_size)
 {
 	uint8_t xl345_read_data_buf[10] = {  };
-	xl345_read_data_buf[0] = addr | 0xc0;			// Read multibit
+	xl345_read_data_buf[0] = *addr | 0xc0;			// Read multibit
 	xl345_read_data_buf[1] = 0x00;
 
 	XL345_CS_LOW();
@@ -647,7 +648,7 @@ void ADXL345_SPI_Read(uint8_t *addr, uint8_t buf_size)
 	XL345_CS_HIGH();
 }
 
-void ADXL345_SPI_Write(uint8_t *addr, uint8_t data)
+void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 {
 	uint8_t xl372_write_data_buf[2] = { };
 	xl372_write_data_buf[0] = addr & 0x7f;
@@ -667,7 +668,7 @@ void ADXL345_SPI_Write(uint8_t *addr, uint8_t data)
 void ADXL372_init(uint8_t *xl372_spi_error_flg)
 {
 	/*
-	 * ADXL372�̃f�o�C�XID���擾�ł��邩�m�F����
+	 * ADXL372�ｿｽﾌデ�ｿｽo�ｿｽC�ｿｽXID�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽﾅゑｿｽ�ｿｽ驍ｩ�ｿｽm�ｿｽF�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 	 */
 	uint8_t xl372_rx_data_buf[2] =
 	{ };
@@ -702,7 +703,7 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 	uint8_t fifo_ctl_addr = XL372_FIFO_CTL;
 	uint8_t fifo_ctl_data = 0x02;
 
-	// FIFO_CTL�ɐݒ�l��������
+	// FIFO_CTL�ｿｽﾉ設抵ｿｽl�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 	ADXL372_SPI_Write(fifo_ctl_addr, fifo_ctl_data);
 	ADXL372_SPI_Read(fifo_ctl_addr);
 	ADXL372_SPI_Read(XL372_STATUS);
@@ -755,7 +756,7 @@ void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
 void Get_Temp_Humid(uint16_t *humid, float *temp)
 {
 	/*
-	 * si7006���牷�x�A���x�f�[�^���擾����
+	 * si7006�ｿｽ�ｿｽ�ｿｽ迚ｷ�ｿｽx�ｿｽA�ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 	 */
 	uint8_t i2c_tx_buf[8] =
 	{ 0x00 };
@@ -767,23 +768,23 @@ void Get_Temp_Humid(uint16_t *humid, float *temp)
 	i2c_tx_buf[1] = Temperature_Not_Hold;
 	uint16_t device_addr = Si7006_ADDERSS << 1;
 
-	// ���x�f�[�^���擾 �P�ʁF��
-	// �v�Z���̓f�[�^�V�[�g�Q��
+	// �ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ �ｿｽP�ｿｽﾊ：�ｿｽ�ｿｽ
+	// �ｿｽv�ｿｽZ�ｿｽ�ｿｽ�ｿｽﾍデ�ｿｽ[�ｿｽ^�ｿｽV�ｿｽ[�ｿｽg�ｿｽQ�ｿｽ�ｿｽ
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[1], 0x08,
 			TIME_OUT);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Temp_data_buf, 0x08, TIME_OUT);
 	*temp = (Temp_data_buf[0] << 8) + Temp_data_buf[2];
 	*temp = ((175.72 * (*temp)) / 65536) - 46.85;
 
-	// ���x�f�[�^�擾 �P�ʁF%
-	// �v�Z���̓f�[�^�V�[�g�Q��
+	// �ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ謫ｾ �ｿｽP�ｿｽﾊ：%
+	// �ｿｽv�ｿｽZ�ｿｽ�ｿｽ�ｿｽﾍデ�ｿｽ[�ｿｽ^�ｿｽV�ｿｽ[�ｿｽg�ｿｽQ�ｿｽ�ｿｽ
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[0], 0x08,
 			TIME_OUT);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Humid_data_buf, 0x08, TIME_OUT);
 	*humid = (Humid_data_buf[0] << 8) + Humid_data_buf[2];
 	*humid = ((125 * (*humid)) / 65536) - 6;
 
-	// �擾�f�[�^��UART�ŕ\��
+	// �ｿｽ謫ｾ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽUART�ｿｽﾅ表�ｿｽ�ｿｽ
 	sprintf(MESSAGE, "Temp=%f, ", *temp);
 	Uart_Message(MESSAGE);
 	sprintf(MESSAGE, "Humid=%d\r\n", *humid);
@@ -794,7 +795,7 @@ void Get_Temp_Humid(uint16_t *humid, float *temp)
 void Led_Bring(void)
 {
 	/*
-	 * LED�_�Őݒ�
+	 * LED�ｿｽ_�ｿｽﾅ設抵ｿｽ
 	 */
 
 	HAL_GPIO_WritePin(Mode_LED_GPIO_Port, Mode_LED_Pin, GPIO_PIN_SET);
@@ -805,9 +806,9 @@ void Led_Bring(void)
 void Uart_Message(char *message)
 {
 	/*
-	 * UART�Ń��b�Z�[�W�𑗐M
-	 * �����Fmessage
-	 * 		�\��������������
+	 * UART�ｿｽﾅ�ｿｽ�ｿｽb�ｿｽZ�ｿｽ[�ｿｽW�ｿｽ乱M
+	 * �ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽFmessage
+	 * 		�ｿｽ\�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
 	 */
 	char tx_message[0xff] =
 	{ 0 };

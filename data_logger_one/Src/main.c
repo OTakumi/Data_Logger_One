@@ -636,12 +636,6 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 
 void ADXL345_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 {
-	/*
-	uint8_t xl345_read_data_buf[10] = {  };
-	xl345_read_data_buf[0] = *addr;
-	xl345_read_data_buf[1] = 0x00;
-	*/
-
 	XL345_CS_LOW();
 	HAL_Delay(5);
 	HAL_SPI_Receive(&hspi1, read_data_buf, buf_size, TIME_OUT);
@@ -665,11 +659,10 @@ void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 /*--------------------------------------
  * ADXL372
  * -------------------------------------*/
-/*---------- Init ---------- */
 void ADXL372_init(uint8_t *xl372_spi_error_flg)
 {
 	/*
-	 * ADXL372�ｿｽﾌデ�ｿｽo�ｿｽC�ｿｽXID�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽﾅゑｿｽ�ｿｽ驍ｩ�ｿｽm�ｿｽF�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+	 * ADXL372
 	 */
 	uint8_t xl372_rx_data_buf[2] =
 	{ };

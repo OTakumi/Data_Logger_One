@@ -88,7 +88,7 @@ void Startup_Message(void);
 void Read_Sw_Status(int8_t*);
 void ADXL345_init(uint8_t*);
 void XL345_readXYZ(int16_t*);
-uint16_t ADXL345_SPI_Read(uint8_t);
+void ADXL345_SPI_Read(uint8_t*, uint8_t);
 void ADXL345_SPI_Write(uint8_t, uint8_t);
 void ADXL372_init(uint8_t*);
 void XL372_readXYZ(int16_t *);
@@ -618,14 +618,8 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 
 	uint8_t xl345_accel_data[6] = { };
 
-	xl345_accel_data[0] = ADXL345_SPI_Read(XL345_DATAX0);
-	xl345_accel_data[1] = ADXL345_SPI_Read(XL345_DATAX1);
-
-	xl345_accel_data[2] = ADXL345_SPI_Read(XL345_DATAY0);
-	xl345_accel_data[3] = ADXL345_SPI_Read(XL345_DATAY1);
-
-	xl345_accel_data[4] = ADXL345_SPI_Read(XL345_DATAZ0);
-	xl345_accel_data[5] = ADXL345_SPI_Read(XL345_DATAZ1);
+	/* data read multi bits XL345_DATAX0 ~ XL345_DATAZ1 */
+	xl345_accel_data[0] = ADXL345_SPI_Read(XL345_DATAX0, sizeof(xl345_accel_data));
 
 	xl345_data_buf[0] = ((uint16_t)xl345_accel_data[1] << 8) + xl345_accel_data[0];
 	xl345_data_buf[1] = ((uint16_t)xl345_accel_data[3] << 8) + xl345_accel_data[2];
@@ -640,21 +634,17 @@ void XL345_readXYZ(int16_t *xl345_data_buf)
 	Uart_Message(MESSAGE);
 }
 
-uint16_t ADXL345_SPI_Read(uint8_t addr)
+void ADXL345_SPI_Read(uint8_t *addr, uint8_t buf_size)
 {
 	uint8_t xl345_read_data_buf[10] = {  };
-	xl345_read_data_buf[0] = addr | 0xc0;
+	xl345_read_data_buf[0] = addr | 0xc0;			// Read multibit
 	xl345_read_data_buf[1] = 0x00;
 
 	XL345_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl345_read_data_buf, 0x08, TIME_OUT);
+	HAL_SPI_Receive(&hspi1, xl345_read_data_buf, buf_size, TIME_OUT);
 	HAL_Delay(5);
 	XL345_CS_HIGH();
-
-	uint16_t xl345_acc_data = 0;
-	xl345_acc_data = xl345_read_data_buf[3];
-	return xl345_acc_data;
 }
 
 void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
@@ -665,7 +655,7 @@ void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 
 	XL372_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, 0x03, TIME_OUT);
+	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, sizeof(xl372_write_data_buf), TIME_OUT);
 	HAL_Delay(5);
 	XL372_CS_HIGH();
 }

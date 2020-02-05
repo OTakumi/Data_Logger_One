@@ -151,48 +151,48 @@ int main(void)
 		ADXL372_init(&xl372_spi_error_flg);
 	}
 
-	// Mode SW�ｿｽﾌ擾ｿｽﾔゑｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽAMode�ｿｽﾘ替ゑｿｽ�ｿｽ�ｿｽ
-	// SW = ON �ｿｽﾌ場合�ｿｽAFlashMemory�ｿｽ�ｿｽ�ｿｽ�ｿｽUART�ｿｽﾅデ�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽM�ｿｽ�ｿｽ�ｿｽ[�ｿｽh
-	// SW = OFF�ｿｽﾌ場合�ｿｽA�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ[�ｿｽh
+	// Mode SW
+	// SW = ON
+	// SW = OFF
 	Read_Sw_Status(&sw_flag);
 
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
-	// Mode SW�ｿｽ�ｿｽON(SW_Flag = 1)�ｿｽﾌとゑｿｽ
+	// Mode SW
 	if (sw_flag == 1)
 	{
 
 	}
 
-	// Mode SW�ｿｽ�ｿｽOFF(SW_Flag = 0)�ｿｽﾌとゑｿｽ
+	// Mode SW�ｿｽ�ｿｽOFF(SW_Flag = 0)
 	if (sw_flag == 0)
 	{
 		while (1)
 		{
-			// �ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ
+			//
 			uint16_t humid = 0;
 			float temp = 0.0;
 			Get_Temp_Humid(&humid, &temp);
 
-			// ADXL345�ｿｽ�ｿｽ�ｿｽ�ｿｽX�ｿｽ�ｿｽ, Y�ｿｽ�ｿｽ, Z�ｿｽ�ｿｽ�ｿｽﾌ会ｿｽ�ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+			// ADXL345
 			int16_t xl345_data_buf[3] =
 			{ };
 			int16_t *xl345_data = 0;
 			xl345_data = xl345_data_buf;
 			XL345_readXYZ(xl345_data);
 
-			// ADXL372�ｿｽ�ｿｽ�ｿｽ�ｿｽX�ｿｽ�ｿｽ, Y�ｿｽ�ｿｽ, Z�ｿｽ�ｿｽ�ｿｽﾌ会ｿｽ�ｿｽ�ｿｽ�ｿｽx�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+			// ADXL372
 			int16_t xl372_data_buf[3] =
 						{ };
 			int16_t *xl372_data = 0;
 			xl372_data = xl372_data_buf;
 			XL372_readXYZ(xl372_data);
 
-			// �ｿｽ謫ｾ�ｿｽ�ｿｽ�ｿｽ�ｿｽ�ｿｽf�ｿｽ[�ｿｽ^�ｿｽ�ｿｽCSV�ｿｽ`�ｿｽ�ｿｽ�ｿｽﾉまとめゑｿｽ
+			//
 
-			// FlashMemory�ｿｽﾉデ�ｿｽ[�ｿｽ^�ｿｽ�ｿｽ�ｿｽi�ｿｽ[�ｿｽ�ｿｽ�ｿｽ�ｿｽ
+			// FlashMemory
 			/* USER CODE END WHILE */
 
 			/* USER CODE BEGIN 3 */

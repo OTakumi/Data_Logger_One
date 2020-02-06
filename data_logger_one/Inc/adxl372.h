@@ -53,11 +53,6 @@
 /******************************************************************************/
 /********************** Macros and Constants Definitions **********************/
 /******************************************************************************/
-/*
- * Pin Setting
- */
-#define ADXL372_CS_LOW()	HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_RESET);
-#define ADXL372_CS_HIGH()	HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_SET);
 
 /*
  * ADXL372 registers definition
@@ -127,8 +122,8 @@
 #define ADXL372_REG_READ(x)	(((x & 0xFF) << 1) | 0x01)
 #define ADXL372_REG_WRITE(x)	((x & 0xFF) << 1)
 
-#define ADXL372_CS_LOW()       			HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_RESET)
-#define ADXL372_CS_HIGH()      			HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_SET)
+#define ADXL372_CS_LOW()	HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_RESET);
+#define ADXL372_CS_HIGH()	HAL_GPIO_WritePin(GPIOB, XL372_CS_Pin, GPIO_PIN_SET);
 
 /* ADXL372_POWER_CTL */
 #define ADXL372_POWER_CTL_INSTANT_ON_TH_MSK	BIT(5)

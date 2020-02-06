@@ -91,9 +91,9 @@ void XL345_readXYZ(int16_t*);
 void ADXL345_SPI_Read(uint8_t*, uint8_t);
 void ADXL345_SPI_Write(uint8_t, uint8_t);
 void ADXL372_init(uint8_t*);
-void adxl372_sttings(void);
+void adxl372_settings(void);
 void XL372_readXYZ(int16_t *);
-uint16_t ADXL372_SPI_Read(uint8_t);
+void ADXL372_SPI_Read(uint8_t*, uint8_t);
 void ADXL372_SPI_Write(uint8_t, uint8_t);
 void Uart_Message(char*);
 void Get_Temp_Humid(uint16_t*, float*);
@@ -673,6 +673,7 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	xl372_rx_data_buf[1] = 0x00;
 
 	// setting the function
+	adxl372_settings();
 
 	// get device id
 	ADXL372_CS_LOW();
@@ -693,9 +694,13 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	}
 }
 
-void adxl372_sttings(void)
+void adxl372_settings(void)
 {
-
+	ADXL372_SPI_Write(ADXL372_POWER_CTL,
+			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));		// STANDBY mode
+	ADXL372_SPI_Write(ADXL372_FIFO_CTL, ADXL372_FIFO_CTL_MODE_MODE(ADXL372_XYZ_FIFO));
+	ADXL372_SPI_Write(ADXL372_POWER_CTL,
+				ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));		// FULL_BW_MEASUREMENT mode
 }
 
 /*---------- Get ADXL372 Acceleration Data ---------- */
@@ -704,43 +709,31 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 	uint8_t xl372_buf[8] =
 	{ };
 
-	uint8_t fifo_ctl_addr = ADXL372_FIFO_CTL;
-	uint8_t fifo_ctl_data = 0x02;
+	xl372_buf[0] = ADXL372_X_DATA_H << 1 | 0x01;
 
-	// FIFO_CTL
-	ADXL372_SPI_Write(fifo_ctl_addr, fifo_ctl_data);
-	ADXL372_SPI_Read(fifo_ctl_addr);
-	ADXL372_SPI_Read(ADXL372_STATUS_1);
-
-	xl372_buf[0] = ADXL372_SPI_Read(ADXL372_FIFO_ENTRIES_2);
+	ADXL372_SPI_Read(xl372_buf, sizeof(xl372_buf));
 
 	Uart_Message("XL372 : ");
-	xl372_data_buf[0] = ((uint16_t) xl372_buf[1] << 8) + xl372_buf[0];
+	xl372_data_buf[0] = ((uint16_t) xl372_buf[0] << 8) + xl372_buf[1];
+	xl372_data_buf[1] = ((uint16_t) xl372_buf[2] << 8) + xl372_buf[3];
+	xl372_data_buf[2] = ((uint16_t) xl372_buf[4] << 8) + xl372_buf[5];
+
+
 	sprintf(MESSAGE, "X_axis=%d, ", xl372_data_buf[0]);
 	Uart_Message(MESSAGE);
-	xl372_data_buf[1] = ((uint16_t) xl372_buf[3] << 8) + xl372_buf[2];
 	sprintf(MESSAGE, "Y_axis=%d, ", xl372_data_buf[1]);
 	Uart_Message(MESSAGE);
-	xl372_data_buf[2] = ((uint16_t) xl372_buf[5] << 8) + xl372_buf[4];
 	sprintf(MESSAGE, "Z_axis=%d\r\n", xl372_data_buf[2]);
 	Uart_Message(MESSAGE);
 }
 
-uint16_t ADXL372_SPI_Read(uint8_t addr)
+void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 {
-	uint8_t xl372_read_data_buf[10] = {  };
-	xl372_read_data_buf[0] = addr << 1 | 0x01;
-	int16_t xl372_acc_data = 0;
-
 	ADXL372_CS_LOW();
 	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl372_read_data_buf, 0x11, TIME_OUT);
+	HAL_SPI_Receive(&hspi1, read_data_buf, buf_size, TIME_OUT);
 	HAL_Delay(5);
 	ADXL372_CS_HIGH();
-
-	xl372_acc_data = xl372_read_data_buf[0];
-
-	return xl372_acc_data;
 }
 
 void ADXL372_SPI_Write(uint8_t addr, uint8_t data)

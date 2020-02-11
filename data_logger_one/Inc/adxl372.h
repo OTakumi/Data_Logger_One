@@ -102,8 +102,8 @@
 #define ADXL372_Z_THRESH_ACT2_H		0x36u   /* Z axis Activity2 Threshold [15:8] */
 #define ADXL372_Z_THRESH_ACT2_L		0x37u   /* Z axis Activity2 Threshold [7:0] */
 #define ADXL372_HPF			0x38u   /* High Pass Filter */
-#define ADXL372_FIFO_SAMPLES        	0x39   /* FIFO Samples */
-#define ADXL372_FIFO_CTL	    	0x3A   /* FIFO Control */
+#define ADXL372_FIFO_SAMPLES        	0x39u   /* FIFO Samples */
+#define ADXL372_FIFO_CTL	    	0x3Au   /* FIFO Control */
 #define ADXL372_INT1_MAP	0x3Bu   /* Interrupt 1 mapping control */
 #define ADXL372_INT2_MAP        0x3Cu   /* Interrupt 2 mapping control */
 #define ADXL372_TIMING	       	0x3Du   /* Timing */

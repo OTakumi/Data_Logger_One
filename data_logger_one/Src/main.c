@@ -688,21 +688,55 @@ void adxl372_settings(void)
 {
 	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
 			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));			// STANDBY mode
-	ADXL372_SPI_Write(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);
+	ADXL372_SPI_Write(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);		// Device Reset
 
+	// FIFO Setting
+	// FIFO_CTL_FORMAT_MODE = XYZ_FIFO
+	// FIFO_CTL_MODE_MODE = FIFO_STREAMED
 	ADXL372_SPI_Write(ADXL372_FIFO_CTL << 1 & 0xfe,
 			ADXL372_FIFO_CTL_FORMAT_MODE(ADXL372_XYZ_FIFO)
 					| ADXL372_FIFO_CTL_MODE_MODE(ADXL372_FIFO_STREAMED) | 0);
-	ADXL372_SPI_Write(ADXL372_FIFO_SAMPLES << 1 & 0xfe, 0x1e);
 
-	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe, ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));	// FULL_BW_MEASUREMENT mode
+	// Measurement CTL Setting
+	// AUTOSLEEP_MODE(6bit) = Disable(0)
+	// LINKLOOP_MODE(5:4bit) = default mode(0)
+	// LOW_NOISE_MODE(3bit) = Enable(1)
+	// BANDWIDTH_MODE(2:0bit) = 3200Hz(100)
+	ADXL372_SPI_Write(ADXL372_MEASURE << 1 & 0xfe,
+			ADXL372_MEASURE_AUTOSLEEP_MODE(0)
+			| ADXL372_MEASURE_LINKLOOP_MODE(0)
+			| ADXL372_MEASURE_LOW_NOISE_MODE(1)
+			| ADXL372_MEASURE_BANDWIDTH_MODE(ADXL372_BW_3200HZ));
+
+	// Timing Setting
+	// Output data rate(7:5bit) = 3200Hz ODR(011)
+	// WAKE_UP_RATE_MODE(4:2bit) = 2048ms(100)
+	// EXT_CLK_MODE(1bit) = Disable(0)
+	// EXT_SYNC_MODE(0bit) = Disable(0)
+	ADXL372_SPI_Write(ADXL372_TIMING << 1 & 0xfe,
+			ADXL372_TIMING_ODR_MODE(ADXL372_ODR_3200HZ)
+			| ADXL372_TIMING_WAKE_UP_RATE_MODE(ADXL372_WUR_2048ms)
+			| ADXL372_TIMING_EXT_CLK_MODE(0)
+			| ADXL372_TIMING_EXT_SYNC_MODE(0));
+
+	// Power CTL Setting
+	// 7, 6bit = Reserved
+	// INSTANT_ON_TH_MODE(5bit) = low instant on threshold(0)
+	// FIL_SETTLE_MODE(4bit) = 370ms(0)
+	// POWER_CTL_MODE(1:0bit) = FULL_BW_MEASUREMENT(11)
+	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
+			ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(ADXL372_INSTANT_ON_LOW_TH)
+			| ADXL372_POWER_CTL_FIL_SETTLE_MODE(ADXL372_FILTER_SETTLE_370)
+			| ADXL372_POWER_CTL_LPF_DIS_MODE(1)
+			| ADXL372_POWER_CTL_HPF_DIS_MODE(0)
+			| ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));	// FULL_BW_MEASUREMENT mode
 }
 
 /*---------- Get ADXL372 Acceleration Data ---------- */
 void XL372_readXYZ(int16_t *xl372_data_buf)
 {
 	uint8_t xl372_buf[7] = { };
-	uint8_t xl372_xyz_data[30] = { };
+	uint8_t xl372_xyz_data[24] = { };
 
 	xl372_buf[0] = ADXL372_FIFO_ENTRIES_2 << 1 | 0x01;
 	ADXL372_SPI_Read(xl372_buf, sizeof(xl372_buf));
@@ -712,6 +746,7 @@ void XL372_readXYZ(int16_t *xl372_data_buf)
 	ADXL372_SPI_Read(xl372_buf, sizeof(xl372_buf));
 
 	xl372_xyz_data[0] = ADXL372_FIFO_DATA << 1 | 0x01;
+	ADXL372_SPI_Read(xl372_xyz_data, sizeof(xl372_xyz_data));
 
 	for (uint8_t cnt = 0; cnt < 5; cnt += 6)
 	{

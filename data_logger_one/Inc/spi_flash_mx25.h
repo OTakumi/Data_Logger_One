@@ -166,7 +166,7 @@
 
 #define FLASH_CMD_NOP         0x00        // NOP (No Operation)
 
-#define MX25_CS_LOW()	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET);
-#define MX25_CS_HIGH()	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
+#define MX25_CS_LOW()	HAL_GPIO_WritePin(GPIOB, MX25_CS_Pin, GPIO_PIN_RESET);
+#define MX25_CS_HIGH()	HAL_GPIO_WritePin(GPIOB, MX25_CS_Pin, GPIO_PIN_SET);
 
 #endif /* SPI_FLASH_MX25_H_ */

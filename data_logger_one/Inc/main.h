@@ -74,6 +74,8 @@ void Error_Handler(void);
 #define XL372_INT2_GPIO_Port GPIOB
 #define TestPad7_Pin GPIO_PIN_10
 #define TestPad7_GPIO_Port GPIOB
+#define MX25_CS_Pin GPIO_PIN_11
+#define MX25_CS_GPIO_Port GPIOB
 #define TestPad4_Pin GPIO_PIN_15
 #define TestPad4_GPIO_Port GPIOA
 #define Mode_LED_Pin GPIO_PIN_3

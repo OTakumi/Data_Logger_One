@@ -272,7 +272,7 @@ static void MX_I2C1_Init(void)
 
 	/* USER CODE END I2C1_Init 1 */
 	hi2c1.Instance = I2C1;
-	hi2c1.Init.Timing = 0x00000103;
+	hi2c1.Init.Timing = 0x200009FE;
 	hi2c1.Init.OwnAddress1 = 0;
 	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
 	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -357,8 +357,8 @@ static void MX_SPI1_Init(void)
 	hspi1.Init.Mode = SPI_MODE_MASTER;
 	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
 	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+	hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
 	hspi1.Init.NSS = SPI_NSS_SOFT;
 	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
 	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -585,11 +585,7 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 	xl345_read_data[0] = XL345_DEVID | 0xc0;
 	xl345_read_data[1] = 0x00;
 
-	XL345_CS_LOW();
-	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, xl345_read_data, sizeof(xl345_read_data), TIME_OUT);
-	HAL_Delay(5);
-	XL345_CS_HIGH();
+	ADXL345_SPI_Read(xl345_read_data, sizeof(xl345_read_data));
 
 	uint8_t device_id = xl345_read_data[1];
 
@@ -829,9 +825,8 @@ void Get_Temp_Humid(float *temp, uint16_t *humid)
 /*---------- Flash Memory ---------- */
 void Flash_memory_init(void)
 {
-	uint8_t mx25_write_data_addr = 0;
-	uint8_t mx25_read_data_buf[7] =
-	{ };
+	uint8_t mx25_status_data_buf[5] = { };
+	uint8_t mx25_read_data_buf[7] = { };
 
 	// Read Device data
 	mx25_read_data_buf[0] = FLASH_CMD_RDID;
@@ -839,10 +834,10 @@ void Flash_memory_init(void)
 	Flash_memory_Read(mx25_read_data_buf, sizeof(mx25_read_data_buf));
 
 	// Write enable
-	mx25_write_data_addr = FLASH_CMD_WREN;
-	Flash_memory_Write(mx25_write_data_addr, 0x00);
-	mx25_read_data_buf[0] = FLASH_CMD_RDSR;
-	Flash_memory_Read(mx25_read_data_buf, sizeof(mx25_read_data_buf));
+	Flash_memory_Write(FLASH_CMD_WRDI, 0x00);
+	Flash_memory_Write(FLASH_CMD_WREN, 0x01);
+	mx25_status_data_buf[0] = FLASH_CMD_RDSR;
+	Flash_memory_Read(mx25_status_data_buf, sizeof(mx25_status_data_buf));
 }
 
 void Flash_memory_Read(uint8_t* read_data_buf, uint8_t buf_size)
@@ -856,7 +851,7 @@ void Flash_memory_Read(uint8_t* read_data_buf, uint8_t buf_size)
 
 void Flash_memory_Write(uint8_t addr, uint8_t data)
 {
-	uint8_t mx25_write_data_buf[3] =
+	uint8_t mx25_write_data_buf[7] =
 	{ };
 	mx25_write_data_buf[0] = addr;
 	mx25_write_data_buf[1] = data;

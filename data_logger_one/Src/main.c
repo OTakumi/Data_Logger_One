@@ -825,19 +825,20 @@ void Get_Temp_Humid(float *temp, uint16_t *humid)
 /*---------- Flash Memory ---------- */
 void Flash_memory_init(void)
 {
-	uint8_t mx25_status_data_buf[5] = { };
 	uint8_t mx25_read_data_buf[7] = { };
 
 	// Read Device data
 	mx25_read_data_buf[0] = FLASH_CMD_RDID;
-	mx25_read_data_buf[3] = 0x01;
 	Flash_memory_Read(mx25_read_data_buf, sizeof(mx25_read_data_buf));
 
-	// Write enable
-	Flash_memory_Write(FLASH_CMD_WRDI, 0x00);
-	Flash_memory_Write(FLASH_CMD_WREN, 0x01);
-	mx25_status_data_buf[0] = FLASH_CMD_RDSR;
-	Flash_memory_Read(mx25_status_data_buf, sizeof(mx25_status_data_buf));
+	if (mx25_read_data_buf[1] != 0xC2)
+	{
+		Uart_Message("MX25 Flash memory Error\r\n");
+	}
+	else
+	{
+		Uart_Message("MX25 Flash memory OK\r\n");
+	}
 }
 
 void Flash_memory_Read(uint8_t* read_data_buf, uint8_t buf_size)
@@ -851,10 +852,16 @@ void Flash_memory_Read(uint8_t* read_data_buf, uint8_t buf_size)
 
 void Flash_memory_Write(uint8_t addr, uint8_t data)
 {
+	uint8_t mx25_status_data_buf[5] = { };
 	uint8_t mx25_write_data_buf[7] =
 	{ };
 	mx25_write_data_buf[0] = addr;
 	mx25_write_data_buf[1] = data;
+
+	// Write enable
+	Flash_memory_Write(FLASH_CMD_WREN, 0x00);
+	mx25_status_data_buf[0] = FLASH_CMD_RDSR;
+	Flash_memory_Read(mx25_status_data_buf, sizeof(mx25_status_data_buf));
 
 	MX25_CS_LOW();
 	HAL_Delay(5);

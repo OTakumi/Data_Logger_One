@@ -75,12 +75,12 @@ static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 void Startup_Message(void);
 void ADXL345_init(uint8_t*);
-void XL345_readXYZ(float*);
+void XL345_readXYZ(int8_t*);
 void ADXL345_SPI_Read(uint8_t*, uint8_t);
 void ADXL345_SPI_Write(uint8_t, uint8_t);
 void ADXL372_init(uint8_t*);
 void adxl372_settings(void);
-void XL372_readXYZ(int16_t*);
+void XL372_readXYZ(int8_t*);
 void ADXL372_SPI_Read(uint8_t*, uint8_t);
 void ADXL372_SPI_Write(uint8_t, uint8_t);
 void Flash_memory_init(void);
@@ -89,7 +89,6 @@ void Flash_memory_Write(uint8_t, uint8_t);
 void Uart_Message(char*);
 void Get_Temp_Humid(float*, uint16_t*);
 void Led_Bring(void);
-int8_t mode_sw_status(void);
 
 /* USER CODE END PFP */
 
@@ -111,11 +110,8 @@ int main(void)
 	/* USER CODE BEGIN 1 */
 	uint16_t humid = 0;
 	float temp = 0.0;
-	float xl345_xyz_data[3] =
-	{ };
-	int16_t xl372_xyz_data[3] =
-	{ };
-	int8_t mode_sw_status_flg = 0;
+	int8_t xl345_xyz_data[3] = { };
+	int8_t xl372_xyz_data[3] = { };
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -143,22 +139,22 @@ int main(void)
 	MX_RTC_Init();
 	MX_TIM6_Init();
 	/* USER CODE BEGIN 2 */
-	mode_sw_status_flg = mode_sw_status();
+	HAL_Delay(500);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	// read memory data mode
-	if (mode_sw_status_flg == 1)
+	if (HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)
 	{
 		while (1)
 		{
-			Uart_Message("Data read Mode");
+			Uart_Message("Data read Mode \r\n");
 		}
 	}
 
 	// get sensor data mode
-	else if (mode_sw_status_flg == 0)
+	else
 	{
 		// Startup_Message();
 		while (xl345_spi_error_flg != 0 || xl372_spi_error_flg != 0)
@@ -172,28 +168,31 @@ int main(void)
 		{
 			Get_Temp_Humid(&temp, &humid); // Get the temperature data and the humidity data
 
-			for (uint8_t i = 0; i < 9; i++)
+			for (uint8_t i = 0; i <= 9; i++)
 			{
 				XL345_readXYZ(xl345_xyz_data); // Get the data stored in ADXL345 FIFO.
 				XL372_readXYZ(xl372_xyz_data); // Get the data stored in ADXL372 FIFO.
 
-				sprintf(MESSAGE, "%4.2f, %4.2f, %4.2f, ", xl345_xyz_data[0],
+				sprintf(MESSAGE, "%2d, %2d, %2d, ", xl345_xyz_data[0],
 						xl345_xyz_data[1], xl345_xyz_data[2]);
 				Uart_Message(MESSAGE);
 				HAL_Delay(10);
 
-				sprintf(MESSAGE, "%5d, %5d, %5d \r\n", xl372_xyz_data[0],
-						xl372_xyz_data[1], xl372_xyz_data[2]);
-				Uart_Message(MESSAGE);
+				//
+				if (i != 9)
+				{
+					sprintf(MESSAGE, "%2d, %2d, %2d \r\n", xl372_xyz_data[0],
+							xl372_xyz_data[1], xl372_xyz_data[2]);
+					Uart_Message(MESSAGE);
+				}
+				else
+				{
+					sprintf(MESSAGE, "%2d, %2d, %2d, %4.2f, %2d \r\n",
+							xl372_xyz_data[0], xl372_xyz_data[1],
+							xl372_xyz_data[2], temp, humid);
+					Uart_Message(MESSAGE);
+				}
 			}
-			sprintf(MESSAGE, "%4.2f, %4.2f, %4.2f, ", xl345_xyz_data[0],
-					xl345_xyz_data[1], xl345_xyz_data[2]);
-			Uart_Message(MESSAGE);
-			sprintf(MESSAGE, "%5d, %5d, %5d, ", xl372_xyz_data[0],
-					xl372_xyz_data[1], xl372_xyz_data[2]);
-			Uart_Message(MESSAGE);
-			sprintf(MESSAGE, "%4.2f, %4d \r\n", temp, humid);
-			Uart_Message(MESSAGE);
 			Led_Bring();
 			// FlashMemory
 			/* USER CODE END WHILE */
@@ -210,12 +209,9 @@ int main(void)
  */
 void SystemClock_Config(void)
 {
-	RCC_OscInitTypeDef RCC_OscInitStruct =
-	{ 0 };
-	RCC_ClkInitTypeDef RCC_ClkInitStruct =
-	{ 0 };
-	RCC_PeriphCLKInitTypeDef PeriphClkInit =
-	{ 0 };
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
 
 	/** Configure the main internal regulator output voltage
 	 */
@@ -498,14 +494,10 @@ static void MX_GPIO_Init(void)
 	{ 0 };
 
 	/* GPIO Ports Clock Enable */
-	__HAL_RCC_GPIOC_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOH_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOA_CLK_ENABLE()
-	;
-	__HAL_RCC_GPIOB_CLK_ENABLE()
-	;
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOH_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin | TestPad3_Pin | TestPad4_Pin,
@@ -568,14 +560,14 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 	/*
 	 *  ADXL345 setting
 	 */
-	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0X0b);//BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
-	ADXL345_SPI_Write(XL345_POWER_CTL & 0x7f, 0x08);//BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
-	ADXL345_SPI_Write(XL345_BW_RATE & 0x7f, 0x0e);//low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
-	ADXL345_SPI_Write(XL345_INT_ENABLE & 0x7f, 0x00);//Interrupt function setting: not enabled
-	ADXL345_SPI_Write(XL345_INT_MAP & 0x7f, 0x00); //Set the interrupt mapping to the INT1 pin or the INT2 pin.
+	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0X0b);		//BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
+	ADXL345_SPI_Write(XL345_POWER_CTL & 0x7f, 0x08);		//BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
+	ADXL345_SPI_Write(XL345_BW_RATE & 0x7f, 0x0e);			//low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
+	ADXL345_SPI_Write(XL345_INT_ENABLE & 0x7f, 0x00);		//Interrupt function setting: not enabled
+	ADXL345_SPI_Write(XL345_INT_MAP & 0x7f, 0x00); 			//Set the interrupt mapping to the INT1 pin or the INT2 pin.
 	ADXL345_SPI_Write(XL345_FIFO_CTL & 0x7f, 0x80);
 
-	ADXL345_SPI_Write(XL345_OFSX & 0x7f, 0x00); 		//XYZ offset adjustment
+	ADXL345_SPI_Write(XL345_OFSX & 0x7f, 0x00); 			//XYZ offset adjustment
 	ADXL345_SPI_Write(XL345_OFSY & 0x7f, 0x00);
 	ADXL345_SPI_Write(XL345_OFSZ & 0x7f, 0x00);
 
@@ -600,16 +592,14 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 }
 
 /*---------- Get ADXL345 Acceleration Data ---------- */
-void XL345_readXYZ(float *xl345_data_buf)
+void XL345_readXYZ(int8_t *xl345_data_buf)
 {
 	// Setting the data format
 	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0x0f);
 
 	// Read multibit
-	uint8_t xl345_accel_data[7] =
-	{ };
-	int16_t xl345_xyz[3] =
-	{ };
+	uint8_t xl345_accel_data[7] = { };
+	int16_t xl345_xyz[3] = { };
 	xl345_accel_data[0] = XL345_DATAX0 | 0xc0;
 
 	/* data read multi bits XL345_DATAX0 ~ XL345_DATAZ1 */
@@ -619,9 +609,9 @@ void XL345_readXYZ(float *xl345_data_buf)
 	xl345_xyz[1] = ((int16_t) xl345_accel_data[4] << 8) + xl345_accel_data[3];
 	xl345_xyz[2] = ((int16_t) xl345_accel_data[6] << 8) + xl345_accel_data[5];
 
-	xl345_data_buf[0] = (float) xl345_xyz[0] * 0.0039;
-	xl345_data_buf[1] = (float) xl345_xyz[1] * 0.0039;
-	xl345_data_buf[2] = (float) xl345_xyz[2] * 0.0039;
+	xl345_data_buf[0] = (float) xl345_xyz[0] * 0.0046;
+	xl345_data_buf[1] = (float) xl345_xyz[1] * 0.0046;
+	xl345_data_buf[2] = (float) xl345_xyz[2] * 0.0046;
 }
 
 void ADXL345_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
@@ -653,11 +643,7 @@ void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
  * -------------------------------------*/
 void ADXL372_init(uint8_t *xl372_spi_error_flg)
 {
-	/*
-	 * ADXL372
-	 */
-	uint8_t xl372_rx_data_buf[3] =
-	{ };
+	uint8_t xl372_rx_data_buf[3] = { };
 
 	// setting the function
 	adxl372_settings();
@@ -684,9 +670,13 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 
 void adxl372_settings(void)
 {
+	// STANDBY mode
 	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
-			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));			// STANDBY mode
-	ADXL372_SPI_Write(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);// Device Reset
+			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));
+
+	// Device Reset
+	ADXL372_SPI_Write(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);
+	HAL_Delay(100);
 
 	// FIFO Setting
 	// FIFO_CTL_FORMAT_MODE = XYZ_FIFO
@@ -701,7 +691,8 @@ void adxl372_settings(void)
 	// LOW_NOISE_MODE(3bit) = Enable(1)
 	// BANDWIDTH_MODE(2:0bit) = 3200Hz(100)
 	ADXL372_SPI_Write(ADXL372_MEASURE << 1 & 0xfe,
-			ADXL372_MEASURE_AUTOSLEEP_MODE(0) | ADXL372_MEASURE_LINKLOOP_MODE(0)
+			ADXL372_MEASURE_AUTOSLEEP_MODE(0)
+			| ADXL372_MEASURE_LINKLOOP_MODE(0)
 			| ADXL372_MEASURE_LOW_NOISE_MODE(1)
 			| ADXL372_MEASURE_BANDWIDTH_MODE(ADXL372_BW_3200HZ));
 
@@ -711,8 +702,8 @@ void adxl372_settings(void)
 	// EXT_CLK_MODE(1bit) = Disable(0)
 	// EXT_SYNC_MODE(0bit) = Disable(0)
 	ADXL372_SPI_Write(ADXL372_TIMING << 1 & 0xfe,
-			ADXL372_TIMING_ODR_MODE(
-					ADXL372_ODR_800HZ) | ADXL372_TIMING_WAKE_UP_RATE_MODE(ADXL372_WUR_512ms)
+			ADXL372_TIMING_ODR_MODE(ADXL372_ODR_800HZ)
+					| ADXL372_TIMING_WAKE_UP_RATE_MODE(ADXL372_WUR_512ms)
 					| ADXL372_TIMING_EXT_CLK_MODE(0)
 					| ADXL372_TIMING_EXT_SYNC_MODE(0));
 
@@ -722,15 +713,15 @@ void adxl372_settings(void)
 	// FIL_SETTLE_MODE(4bit) = 370ms(0)
 	// POWER_CTL_MODE(1:0bit) = FULL_BW_MEASUREMENT(11)
 	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
-			ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(
-					ADXL372_INSTANT_ON_LOW_TH) | ADXL372_POWER_CTL_FIL_SETTLE_MODE(ADXL372_FILTER_SETTLE_370)
+			ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(ADXL372_INSTANT_ON_LOW_TH)
+					| ADXL372_POWER_CTL_FIL_SETTLE_MODE(ADXL372_FILTER_SETTLE_370)
 					| ADXL372_POWER_CTL_LPF_DIS_MODE(1)
 					| ADXL372_POWER_CTL_HPF_DIS_MODE(0)
 					| ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));	// FULL_BW_MEASUREMENT mode
+	HAL_Delay(370);
 
-			// Self test
-	uint8_t sefl_test_check[2] =
-	{ };
+	// Self test
+	uint8_t sefl_test_check[2] = { };
 	ADXL372_SPI_Write(ADXL372_SELF_TEST << 1 & 0xfe, 0x01);
 	// Wait about 300 ms for self-test to complete
 	HAL_Delay(320);
@@ -747,24 +738,38 @@ void adxl372_settings(void)
 }
 
 /*---------- Get ADXL372 Acceleration Data ---------- */
-void XL372_readXYZ(int16_t *xl372_data_buf)
+void XL372_readXYZ(int8_t *xl372_data_buf)
 {
-	uint8_t xl372_xyz_data[7] =
-	{ };
+	uint8_t check_status[2] = { };
+	uint8_t xl372_xyz_data[7] =	{ };
+	uint8_t xyz_addrs[3] = { };
+	int16_t i16_xyz_data[3] = { };
 
-	xl372_xyz_data[0] = ADXL372_X_DATA_H << 1 | 0x01;
-	ADXL372_SPI_Read(xl372_xyz_data, sizeof(xl372_xyz_data));
+	check_status[0] = ADXL372_STATUS_1 << 1 | 0x01;
+	ADXL372_SPI_Read(check_status, sizeof(check_status));
 
-	xl372_data_buf[0] = ((int16_t) xl372_xyz_data[1] << 8)
+	xyz_addrs[0] = ADXL372_X_DATA_H << 1 | 0x01;
+	xyz_addrs[1] = ADXL372_Y_DATA_H << 1 | 0x01;
+	xyz_addrs[2] = ADXL372_Z_DATA_H << 1 | 0x01;
+	for(int8_t i = 0; i < 3; i++)
+	{
+		xl372_xyz_data[0] = xyz_addrs[i];
+		ADXL372_SPI_Read(xl372_xyz_data, sizeof(xl372_xyz_data));
+		i16_xyz_data[i] = ((int16_t) xl372_xyz_data[1] << 8) | (xl372_xyz_data[2]);
+	}
+
+	/*
+	i16_xyz_data[0] = ((int16_t) xl372_xyz_data[1] << 8)
 			| (xl372_xyz_data[2]);
-	xl372_data_buf[1] = ((int16_t) xl372_xyz_data[3] << 8)
+	i16_xyz_data[1] = ((int16_t) xl372_xyz_data[3] << 8)
 			| (xl372_xyz_data[4]);
-	xl372_data_buf[2] = ((int16_t) xl372_xyz_data[5] << 8)
+	i16_xyz_data[2] = ((int16_t) xl372_xyz_data[5] << 8)
 			| (xl372_xyz_data[6]);
+	*/
 
-	xl372_data_buf[0] = xl372_data_buf[0] * 0.1;
-	xl372_data_buf[1] = xl372_data_buf[1] * 0.1;
-	xl372_data_buf[2] = xl372_data_buf[2] * 0.1;
+	xl372_data_buf[0] = i16_xyz_data[0] * 0.1;
+	xl372_data_buf[1] = i16_xyz_data[1] * 0.1;
+	xl372_data_buf[2] = i16_xyz_data[2] * 0.1;
 }
 
 void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
@@ -794,12 +799,9 @@ void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
 /*---------- Get Temperature and Humidity ---------- */
 void Get_Temp_Humid(float *temp, uint16_t *humid)
 {
-	uint8_t i2c_tx_buf[8] =
-	{ };
-	uint8_t Temp_data_buf[4] =
-	{ };
-	uint8_t Humid_data_buf[4] =
-	{ };
+	uint8_t i2c_tx_buf[8] = { };
+	uint8_t Temp_data_buf[4] = { };
+	uint8_t Humid_data_buf[4] =	{ };
 
 	i2c_tx_buf[0] = Temperature_Not_Hold;// Measure Temperature, No Hold Master Mode
 	i2c_tx_buf[1] = Humidity_Not_Hold;// Measure Relative Humidity, No Hold Master Mode
@@ -892,18 +894,6 @@ void Uart_Message(char *message)
 	TIME_OUT);
 }
 
-int8_t mode_sw_status(void)
-{
-	if (HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-
-}
 /* USER CODE END 4 */
 
 /**

@@ -88,7 +88,7 @@ void Flash_memory_Read(uint8_t*, uint8_t);
 void Flash_memory_Write(uint8_t, uint8_t);
 void Uart_Message(char*);
 void Get_Temp_Humid(float*, uint16_t*);
-void Led_Bring(void);
+void Led_Bring(int16_t);
 
 /* USER CODE END PFP */
 
@@ -164,6 +164,12 @@ int main(void)
 			ADXL372_init(&xl372_spi_error_flg);
 			Flash_memory_init();
 		}
+		// If Mode_SW pushed, Start to get sensor data.
+		while(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 0)
+		{
+			Led_Bring(10);
+		}
+
 		while (1)
 		{
 			Get_Temp_Humid(&temp, &humid); // Get the temperature data and the humidity data
@@ -195,6 +201,13 @@ int main(void)
 			}
 			Led_Bring();
 			// FlashMemory
+
+			if(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)
+			{
+				for(int8_t i = 0; i < 3; i++)
+					Led_Bring(50);
+				break;
+			}
 			/* USER CODE END WHILE */
 
 			/* USER CODE BEGIN 3 */
@@ -874,11 +887,12 @@ void Flash_memory_Write(uint8_t addr, uint8_t data)
 }
 
 /*---------- LED Bring ---------- */
-void Led_Bring(void)
+void Led_Bring(int16_t delay_time)
 {
 	HAL_GPIO_WritePin(Mode_LED_GPIO_Port, Mode_LED_Pin, GPIO_PIN_SET);
-	HAL_Delay(10);
+	HAL_Delay(delay_time);
 	HAL_GPIO_WritePin(Mode_LED_GPIO_Port, Mode_LED_Pin, GPIO_PIN_RESET);
+	HAL_Delay(delay_time);
 }
 
 /*---------- UART message ---------- */

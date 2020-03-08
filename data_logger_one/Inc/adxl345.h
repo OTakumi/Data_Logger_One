@@ -111,3 +111,4 @@ typedef enum
 #define XL345_CS_HIGH()      			HAL_GPIO_WritePin(GPIOA, XL345_CS_Pin, GPIO_PIN_SET)
 
 /* Private function prototypes -----------------------------------------------*/
+

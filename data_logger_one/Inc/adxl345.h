@@ -9,10 +9,6 @@
 #ifndef ADXL345_H_
 #define ADXL345_H_
 
-
-
-#endif /* ADXL345_H_ */
-
 /*=========================================================================
 	ADXL345 REGISTER MAP from ADXL345 Datasheet */
 
@@ -112,3 +108,10 @@ typedef enum
 
 /* Private function prototypes -----------------------------------------------*/
 
+void ADXL345_init(uint8_t*);
+void XL345_readXYZ(int8_t*);
+void ADXL345_SPI_Read(uint8_t*, uint8_t);
+void ADXL345_SPI_Write(uint8_t, uint8_t);
+
+
+#endif /* ADXL345_H_ */

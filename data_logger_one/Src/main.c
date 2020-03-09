@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <flash_mx25.h>
+#include <mx25r_config.h>
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -28,7 +28,7 @@
 #include "adxl345.h"
 #include "adxl372.h"
 #include "si7006_a20.h"
-#include "flash_mx25.h"
+#include "mx25r1635f.h"
 #include "binary.h"
 
 /* USER CODE END Includes */
@@ -40,7 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define TIME_OUT		0xFF
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -75,18 +75,6 @@ static void MX_RTC_Init(void);
 static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 void Startup_Message(void);
-void ADXL345_init(uint8_t*);
-void XL345_readXYZ(int8_t*);
-void ADXL345_SPI_Read(uint8_t*, uint8_t);
-void ADXL345_SPI_Write(uint8_t, uint8_t);
-void ADXL372_init(uint8_t*);
-void adxl372_settings(void);
-void XL372_readXYZ(int8_t*);
-void ADXL372_SPI_Read(uint8_t*, uint8_t);
-void ADXL372_SPI_Write(uint8_t, uint8_t);
-void Flash_memory_init(void);
-void FMemorySPIRead(uint8_t*);
-void FMemorySPIWrite(uint8_t*);
 void Uart_Message(char*);
 void Get_Temp_Humid(float*, uint16_t*);
 void Led_Bring(int16_t);
@@ -113,6 +101,8 @@ int main(void)
 	float temp = 0.0;
 	int8_t xl345_xyz_data[3] = { };
 	int8_t xl372_xyz_data[3] = { };
+
+	uint32_t mx25r_device_id = 0;
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -161,9 +151,8 @@ int main(void)
 		while (xl345_spi_error_flg != 0 || xl372_spi_error_flg != 0)
 		{
 			ADXL345_init(&xl345_spi_error_flg);
-			HAL_Delay(10);
 			ADXL372_init(&xl372_spi_error_flg);
-			Flash_memory_init();
+			mx25r_device_id = MX25Rxx_ReadID();
 		}
 		// If Mode_SW pushed, Start to get sensor data.
 		while(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 0)
@@ -214,16 +203,14 @@ int main(void)
 					humid
 			};
 			*/
-			uint8_t sensor_data[5] = { FLASH_CMD_PP, 0x00, 0x00, 0x00, 0xaa };
-			uint8_t write_enable[1] = { FLASH_CMD_WREN };
-			FMemorySPIWrite(write_enable);
-			FMemorySPIWrite(sensor_data);
-			HAL_Delay(30);
-			uint8_t read_data[7] = {FLASH_CMD_READ, 0x00, 0x00, 0x00, 0x00 };
-			FMemorySPIRead(read_data);
+			uint32_t mx25r_write_addr = 0x000000;
+			uint8_t mx25r_write_data = 0xaa;
+			MX25Rxx_WriteByte(mx25r_write_data, mx25r_write_addr);
 
-			sprintf(MESSAGE, "FM %2d, %2d, %2d \r\n", read_data[4],
-					read_data[5], read_data[6]);
+			uint8_t *mx25r_read_data = 0;
+			MX25Rxx_ReadByte(*mx25r_read_data, mx25r_write_addr);
+
+			sprintf(MESSAGE, "FM %d \r\n", *mx25r_read_data);
 			Uart_Message(MESSAGE);
 
 			if(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)
@@ -589,242 +576,7 @@ void Startup_Message(void)
 	Uart_Message(message);
 }
 
-/*--------------------------------------
- * ADXL345
- * -------------------------------------*/
-void ADXL345_init(uint8_t *xl345_spi_error_flg)
-{
-	/*
-	 *  ADXL345 setting
-	 */
-	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0X0b);		//BIT6: SPI4 line mode (default); BIT5: interrupt level 0/1 (high/low active); BIT0-1: range=16g
-	ADXL345_SPI_Write(XL345_POWER_CTL & 0x7f, 0x08);		//BIT3=0/1: (measurement mode/standby mode); BIT2=0/1: (work/hibernate);
-	ADXL345_SPI_Write(XL345_BW_RATE & 0x7f, 0x0e);			//low 4 bits: output data rate=1600 (at this rate, SPI rate should be set >=2M); BIT4=0/1 (low power/normal)
-	ADXL345_SPI_Write(XL345_INT_ENABLE & 0x7f, 0x00);		//Interrupt function setting: not enabled
-	ADXL345_SPI_Write(XL345_INT_MAP & 0x7f, 0x00); 			//Set the interrupt mapping to the INT1 pin or the INT2 pin.
-	ADXL345_SPI_Write(XL345_FIFO_CTL & 0x7f, 0x80);
 
-	ADXL345_SPI_Write(XL345_OFSX & 0x7f, 0x00); 			//XYZ offset adjustment
-	ADXL345_SPI_Write(XL345_OFSY & 0x7f, 0x00);
-	ADXL345_SPI_Write(XL345_OFSZ & 0x7f, 0x00);
-
-	// Get device id
-	uint8_t xl345_read_data[3] = { XL345_DEVID | 0xc0, 0x00, };
-	ADXL345_SPI_Read(xl345_read_data, sizeof(xl345_read_data));
-
-	uint8_t device_id = xl345_read_data[1];
-	if (device_id != XL345_I_M_DEVID)
-	{
-		*xl345_spi_error_flg = 1;
-	}
-	else
-	{
-		*xl345_spi_error_flg = 0;
-	}
-}
-
-/*---------- Get ADXL345 Acceleration Data ---------- */
-void XL345_readXYZ(int8_t *xl345_data_buf)
-{
-	// Setting the data format
-	ADXL345_SPI_Write(XL345_DATA_FORMAT & 0x7f, 0x0f);
-
-	// Read multibit
-	uint8_t xl345_accel_data[7] = { };
-	int16_t xl345_xyz[3] = { };
-	xl345_accel_data[0] = XL345_DATAX0 | 0xc0;
-
-	/* data read multi bits XL345_DATAX0 ~ XL345_DATAZ1 */
-	ADXL345_SPI_Read(xl345_accel_data, sizeof(xl345_accel_data));
-
-	xl345_xyz[0] = ((int16_t) xl345_accel_data[2] << 8) + xl345_accel_data[1];
-	xl345_xyz[1] = ((int16_t) xl345_accel_data[4] << 8) + xl345_accel_data[3];
-	xl345_xyz[2] = ((int16_t) xl345_accel_data[6] << 8) + xl345_accel_data[5];
-
-	xl345_data_buf[0] = (float) xl345_xyz[0] * 0.0048;
-	xl345_data_buf[1] = (float) xl345_xyz[1] * 0.0048;
-	xl345_data_buf[2] = (float) xl345_xyz[2] * 0.0048;
-}
-
-void ADXL345_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
-{
-	XL345_CS_LOW();
-	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, read_data_buf, buf_size, TIME_OUT);
-	HAL_Delay(5);
-	XL345_CS_HIGH();
-}
-
-void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
-{
-	uint8_t xl345_write_data_buf[2] =
-	{ };
-	xl345_write_data_buf[0] = addr;
-	xl345_write_data_buf[1] = data;
-
-	XL345_CS_LOW();
-	HAL_Delay(5);
-	HAL_SPI_Transmit(&hspi1, xl345_write_data_buf, sizeof(xl345_write_data_buf),
-			TIME_OUT);
-	HAL_Delay(5);
-	XL345_CS_HIGH();
-}
-
-/*--------------------------------------
- * ADXL372
- * -------------------------------------*/
-void ADXL372_init(uint8_t *xl372_spi_error_flg)
-{
-	uint8_t xl372_rx_data_buf[3] = { };
-
-	// setting the function
-	adxl372_settings();
-
-	// get power mode status
-	xl372_rx_data_buf[0] = ADXL372_POWER_CTL << 1 | 0x01;
-	ADXL372_SPI_Read(xl372_rx_data_buf, sizeof(xl372_rx_data_buf));
-
-	// get device id
-	xl372_rx_data_buf[0] = ADXL372_PARTID << 1 | 0x01;
-	ADXL372_SPI_Read(xl372_rx_data_buf, sizeof(xl372_rx_data_buf));
-
-	if (xl372_rx_data_buf[1] != ADXL372_PARTID_VAL)
-	{
-		// Uart_Message("ADXL372 SPI Error\r\n");
-		*xl372_spi_error_flg = 1;
-	}
-	else
-	{
-		// Uart_Message("ADXL372 SPI OK\r\n");
-		*xl372_spi_error_flg = 0;
-	}
-}
-
-void adxl372_settings(void)
-{
-	// STANDBY mode
-	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
-			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));
-
-	// Device Reset
-	ADXL372_SPI_Write(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);
-	HAL_Delay(100);
-
-	// FIFO Setting
-	// FIFO_CTL_FORMAT_MODE = XYZ_FIFO
-	// FIFO_CTL_MODE_MODE = FIFO_STREAMED
-	ADXL372_SPI_Write(ADXL372_FIFO_CTL << 1 & 0xfe,
-			ADXL372_FIFO_CTL_FORMAT_MODE(ADXL372_XYZ_FIFO)
-					| ADXL372_FIFO_CTL_MODE_MODE(ADXL372_FIFO_STREAMED) | 0);
-
-	// Measurement CTL Setting
-	// AUTOSLEEP_MODE(6bit) = Disable(0)
-	// LINKLOOP_MODE(5:4bit) = default mode(0)
-	// LOW_NOISE_MODE(3bit) = Enable(1)
-	// BANDWIDTH_MODE(2:0bit) = 3200Hz(100)
-	ADXL372_SPI_Write(ADXL372_MEASURE << 1 & 0xfe,
-			ADXL372_MEASURE_AUTOSLEEP_MODE(0)
-			| ADXL372_MEASURE_LINKLOOP_MODE(0)
-			| ADXL372_MEASURE_LOW_NOISE_MODE(1)
-			| ADXL372_MEASURE_BANDWIDTH_MODE(ADXL372_BW_3200HZ));
-
-	// Timing Setting
-	// Output data rate(7:5bit) = 800Hz ODR(001)
-	// WAKE_UP_RATE_MODE(4:2bit) = 512ms(011)
-	// EXT_CLK_MODE(1bit) = Disable(0)
-	// EXT_SYNC_MODE(0bit) = Disable(0)
-	ADXL372_SPI_Write(ADXL372_TIMING << 1 & 0xfe,
-			ADXL372_TIMING_ODR_MODE(ADXL372_ODR_800HZ)
-					| ADXL372_TIMING_WAKE_UP_RATE_MODE(ADXL372_WUR_512ms)
-					| ADXL372_TIMING_EXT_CLK_MODE(0)
-					| ADXL372_TIMING_EXT_SYNC_MODE(0));
-
-	// Power CTL Setting
-	// 7, 6bit = Reserved
-	// INSTANT_ON_TH_MODE(5bit) = low instant on threshold(0)
-	// FIL_SETTLE_MODE(4bit) = 370ms(0)
-	// POWER_CTL_MODE(1:0bit) = FULL_BW_MEASUREMENT(11)
-	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
-			ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(ADXL372_INSTANT_ON_LOW_TH)
-					| ADXL372_POWER_CTL_FIL_SETTLE_MODE(ADXL372_FILTER_SETTLE_370)
-					| ADXL372_POWER_CTL_LPF_DIS_MODE(1)
-					| ADXL372_POWER_CTL_HPF_DIS_MODE(0)
-					| ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));	// FULL_BW_MEASUREMENT mode
-
-	// Self test
-	ADXL372_SPI_Write(ADXL372_SELF_TEST << 1 & 0xfe, 0x01);
-	// Wait about 300 ms for self-test to complete
-	HAL_Delay(320);
-	uint8_t sefl_test_check[2] = { ADXL372_SELF_TEST << 1 | 0x01, };
-	ADXL372_SPI_Read(sefl_test_check, sizeof(sefl_test_check));
-
-	if (sefl_test_check[1] == 0x06)
-	{
-		Uart_Message("ADXL372 self test finished. \r\n");
-	}
-	else
-	{
-		Uart_Message("ADXL372 self test is failed. \r\n");
-	}
-}
-
-/*---------- Get ADXL372 Acceleration Data ---------- */
-void XL372_readXYZ(int8_t *xl372_data_buf)
-{
-	uint8_t check_status[2] = { ADXL372_STATUS_1 << 1 | 0x01, };
-	uint8_t xl372_xyz_data[7] =	{ };
-	uint8_t xyz_addrs[3] = { };
-	int16_t i16_xyz_data[3] = { };
-
-	ADXL372_SPI_Read(check_status, sizeof(check_status));
-
-	xyz_addrs[0] = ADXL372_X_DATA_H << 1 | 0x01;
-	xyz_addrs[1] = ADXL372_Y_DATA_H << 1 | 0x01;
-	xyz_addrs[2] = ADXL372_Z_DATA_H << 1 | 0x01;
-	for(int8_t i = 0; i < 3; i++)
-	{
-		xl372_xyz_data[0] = xyz_addrs[i];
-		ADXL372_SPI_Read(xl372_xyz_data, sizeof(xl372_xyz_data));
-		i16_xyz_data[i] = ((int16_t) xl372_xyz_data[1] << 8) | (xl372_xyz_data[2]);
-	}
-
-	/*
-	i16_xyz_data[0] = ((int16_t) xl372_xyz_data[1] << 8)
-			| (xl372_xyz_data[2]);
-	i16_xyz_data[1] = ((int16_t) xl372_xyz_data[3] << 8)
-			| (xl372_xyz_data[4]);
-	i16_xyz_data[2] = ((int16_t) xl372_xyz_data[5] << 8)
-			| (xl372_xyz_data[6]);
-	*/
-
-	xl372_data_buf[0] = i16_xyz_data[0] * 0.1;
-	xl372_data_buf[1] = i16_xyz_data[1] * 0.1;
-	xl372_data_buf[2] = i16_xyz_data[2] * 0.1;
-}
-
-void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
-{
-	ADXL372_CS_LOW();
-	HAL_Delay(5);
-	HAL_SPI_Receive(&hspi1, read_data_buf, buf_size, TIME_OUT);
-	HAL_Delay(5);
-	ADXL372_CS_HIGH();
-}
-
-void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
-{
-	uint8_t xl372_write_data_buf[2] =
-	{ };
-	xl372_write_data_buf[0] = addr;
-	xl372_write_data_buf[1] = data;
-
-	ADXL372_CS_LOW();
-	HAL_Delay(5);
-	HAL_SPI_Transmit(&hspi1, xl372_write_data_buf, sizeof(xl372_write_data_buf),
-			TIME_OUT);
-	HAL_Delay(5);
-	ADXL372_CS_HIGH();
-}
 
 /*---------- Get Temperature and Humidity ---------- */
 void Get_Temp_Humid(float *temp, uint16_t *humid)
@@ -839,54 +591,19 @@ void Get_Temp_Humid(float *temp, uint16_t *humid)
 
 	// Get the Temperature data
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[0],
-			sizeof(Temp_data_buf), TIME_OUT);
+			sizeof(Temp_data_buf), 100);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Temp_data_buf,
-			sizeof(Temp_data_buf), TIME_OUT);
+			sizeof(Temp_data_buf), 100);
 	*temp = (Temp_data_buf[0] << 8) + Temp_data_buf[1];
 	*temp = ((175.72 * (*temp)) / 65536) - 46.85;
 
 	// Get the Humidity data
 	HAL_I2C_Master_Transmit(&hi2c1, device_addr, &i2c_tx_buf[1],
-			sizeof(Humid_data_buf), TIME_OUT);
+			sizeof(Humid_data_buf), 100);
 	HAL_I2C_Master_Receive(&hi2c1, device_addr, Humid_data_buf,
-			sizeof(Humid_data_buf), TIME_OUT);
+			sizeof(Humid_data_buf), 100);
 	*humid = (Humid_data_buf[0] << 8) + Humid_data_buf[1];
 	*humid = ((125 * (*humid)) / 65536) - 6;
-}
-
-/*---------- Flash Memory ---------- */
-void Flash_memory_init(void)
-{
-	// Read Device data
-	uint8_t device_id[4] = { FLASH_CMD_RDID,  };
-	FMemorySPIRead(device_id);
-
-	if (device_id[1] != 0xC2)
-	{
-		Uart_Message("MX25 Flash memory Error\r\n");
-	}
-	else
-	{
-		Uart_Message("MX25 Flash memory OK\r\n");
-	}
-}
-
-void FMemorySPIRead(uint8_t* read_data_buf)
-{
-	MX25_CS_LOW();
-	HAL_Delay(1);
-	HAL_SPI_Receive(&hspi2, read_data_buf, sizeof(read_data_buf), TIME_OUT);
-	HAL_Delay(1);
-	MX25_CS_HIGH();
-}
-
-void FMemorySPIWrite(uint8_t* write_data_buf)
-{
-	MX25_CS_LOW();
-	HAL_Delay(1);
-	HAL_SPI_Transmit(&hspi2, write_data_buf, sizeof(write_data_buf), TIME_OUT);
-	HAL_Delay(1);
-	MX25_CS_HIGH();
 }
 
 /*---------- LED Bring ---------- */
@@ -907,8 +624,7 @@ void Uart_Message(char *message)
 	char tx_message[0xff] =
 	{ 0 };
 	sprintf(tx_message, "%s", message);
-	HAL_UART_Transmit(&huart1, (uint8_t*) tx_message, sizeof(tx_message),
-	TIME_OUT);
+	HAL_UART_Transmit(&huart1, (uint8_t*) tx_message, sizeof(tx_message), 100);
 }
 
 /* USER CODE END 4 */

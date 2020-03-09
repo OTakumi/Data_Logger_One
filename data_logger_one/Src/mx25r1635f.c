@@ -73,6 +73,7 @@ uint8_t MX25qxx_ReadStatusRegister(uint8_t SelectStatusRegister_1_2_3)
 }
 
 //###################################################################################################################
+/*
 void MX25Rxx_WaitForWriteEnd(void)
 {
 	uint8_t status = 0;
@@ -88,11 +89,11 @@ void MX25Rxx_WaitForWriteEnd(void)
 	while ((mx25rxx.StatusRegister1 & 0x01) == 0x01);
 	MX25_CS_HIGH();
 }
-
+*/
 //###################################################################################################################
 void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t WriteAddr_inBytes)
 {
-	MX25Rxx_WaitForWriteEnd();
+	// MX25Rxx_WaitForWriteEnd();
 	MX25Rxx_WriteEnable();
 	MX25_CS_LOW();
 	MX25Rxx_Spi(FLASH_CMD_PP);
@@ -101,7 +102,7 @@ void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t WriteAddr_inBytes)
 	MX25Rxx_Spi(WriteAddr_inBytes & 0xFF);
 	MX25Rxx_Spi(pBuffer);
 	MX25_CS_HIGH();
-	MX25Rxx_WaitForWriteEnd();
+	// MX25Rxx_WaitForWriteEnd();
 }
 
 //###################################################################################################################

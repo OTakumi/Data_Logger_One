@@ -18,18 +18,19 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <mx25r_config.h>
-#include "main.h"
+#include <main.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-#include "stm32l0xx.h"
-#include "adxl345.h"
-#include "adxl372.h"
-#include "si7006_a20.h"
-#include "mx25r1635f.h"
-#include "binary.h"
+#include <stdbool.h>
+#include <stm32l0xx.h>
+#include <adxl345.h>
+#include <adxl372.h>
+#include <si7006_a20.h>
+#include <mx25r_config.h>
+#include <mx25r1635f.h>
+#include <binary.h>
 
 /* USER CODE END Includes */
 
@@ -101,8 +102,6 @@ int main(void)
 	float temp = 0.0;
 	int8_t xl345_xyz_data[3] = { };
 	int8_t xl372_xyz_data[3] = { };
-
-	uint32_t mx25r_device_id = 0;
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -152,7 +151,7 @@ int main(void)
 		{
 			ADXL345_init(&xl345_spi_error_flg);
 			ADXL372_init(&xl372_spi_error_flg);
-			mx25r_device_id = MX25Rxx_ReadID();
+			MX25Rxx_Init();
 		}
 		// If Mode_SW pushed, Start to get sensor data.
 		while(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 0)

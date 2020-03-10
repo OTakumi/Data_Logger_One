@@ -7,6 +7,7 @@
 
 #include <main.h>
 #include <stm32l0xx.h>
+#include <stdbool.h>
 #include <mx25r1635f.h>
 #include <mx25r_config.h>
 
@@ -117,4 +118,47 @@ void MX25Rxx_ReadByte(uint8_t *pBuffer, uint32_t Bytes_Address)
 	MX25Rxx_Spi(0);
 	*pBuffer = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
 	MX25_CS_HIGH();
+}
+
+//###################################################################################################################
+bool MX25Rxx_Init(void)
+{
+	mx25rxx.Lock=1;	
+	while(HAL_GetTick()<100)
+		HAL_Delay(1);
+	MX25_CS_HIGH();
+	HAL_Delay(100);
+
+	uint32_t id;
+	#if (_mx25rXX_DEBUG==1)
+	Uart_Message("mx25rxx Init Begin...\r\n");
+	#endif
+	id = MX25Rxx_ReadID();
+	
+	#if (_mx25rxx_DEBUG==1)
+	Uart_Message("mx25rxx ID:0x%X\r\n",id);
+	#endif
+		
+	mx25rxx.PageSize=256;
+	mx25rxx.SectorSize=0x1000;
+	mx25rxx.SectorCount=mx25rxx.BlockCount*16;
+	mx25rxx.PageCount=(mx25rxx.SectorCount*mx25rxx.SectorSize)/mx25rxx.PageSize;
+	mx25rxx.BlockSize=mx25rxx.SectorSize*16;
+	mx25rxx.CapacityInKiloByte=(mx25rxx.SectorCount*mx25rxx.SectorSize)/1024;
+	mx25rxx_ReadUniqID();
+	mx25rxx_ReadStatusRegister(1);
+	mx25rxx_ReadStatusRegister(2);
+	mx25rxx_ReadStatusRegister(3);
+	#if (_mx25rxx_DEBUG==1)
+	Uart_Message("mx25rxx Page Size: %d Bytes\r\n",mx25rxx.PageSize);
+	Uart_Message("mx25rxx Page Count: %d\r\n",mx25rxx.PageCount);
+	Uart_Message("mx25rxx Sector Size: %d Bytes\r\n",mx25rxx.SectorSize);
+	Uart_Message("mx25rxx Sector Count: %d\r\n",mx25rxx.SectorCount);
+	Uart_Message("mx25rxx Block Size: %d Bytes\r\n",mx25rxx.BlockSize);
+	Uart_Message("mx25rxx Block Count: %d\r\n",mx25rxx.BlockCount);
+	Uart_Message("mx25rxx Capacity: %d KiloBytes\r\n",mx25rxx.CapacityInKiloByte);
+	Uart_Message("mx25rxx Init Done\r\n");
+	#endif
+	mx25rxx.Lock=0;	
+	return true;
 }

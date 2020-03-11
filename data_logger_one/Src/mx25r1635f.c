@@ -8,6 +8,7 @@
 #include <main.h>
 #include <stm32l0xx.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <mx25r1635f.h>
 #include <mx25r_config.h>
 
@@ -123,6 +124,7 @@ void MX25Rxx_ReadByte(uint8_t *pBuffer, uint32_t Bytes_Address)
 //###################################################################################################################
 bool MX25Rxx_Init(void)
 {
+	MX25_WP_HIGH();
 	mx25rxx.Lock = 1;
 	while (HAL_GetTick() < 100)
 		HAL_Delay(1);

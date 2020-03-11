@@ -9,6 +9,8 @@
 #ifndef ADXL345_H_
 #define ADXL345_H_
 
+#include <stdbool.h>
+
 /*=========================================================================
 	ADXL345 REGISTER MAP from ADXL345 Datasheet */
 
@@ -54,22 +56,22 @@
 /* Used with register 0x2C (ADXL345_REG_BW_RATE) to set bandwidth */
 typedef enum
 {
-	XL345_DATARATE_3200_HZ = 0b1111, // 1600Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_1600_HZ = 0b1110, //  800Hz Bandwidth    90ƒÊA IDD
-	XL345_DATARATE_800_HZ = 0b1101, //  400Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_400_HZ = 0b1100, //  200Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_200_HZ = 0b1011, //  100Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_100_HZ = 0b1010, //   50Hz Bandwidth   140ƒÊA IDD
-	XL345_DATARATE_50_HZ = 0b1001, //   25Hz Bandwidth    90ƒÊA IDD
-	XL345_DATARATE_25_HZ = 0b1000, // 12.5Hz Bandwidth    60ƒÊA IDD
-	XL345_DATARATE_12_5_HZ = 0b0111, // 6.25Hz Bandwidth    50ƒÊA IDD
-	XL345_DATARATE_6_25HZ = 0b0110, // 3.13Hz Bandwidth    45ƒÊA IDD
-	XL345_DATARATE_3_13_HZ = 0b0101, // 1.56Hz Bandwidth    40ƒÊA IDD
-	XL345_DATARATE_1_56_HZ = 0b0100, // 0.78Hz Bandwidth    34ƒÊA IDD
-	XL345_DATARATE_0_78_HZ = 0b0011, // 0.39Hz Bandwidth    23ƒÊA IDD
-	XL345_DATARATE_0_39_HZ = 0b0010, // 0.20Hz Bandwidth    23ƒÊA IDD
-	XL345_DATARATE_0_20_HZ = 0b0001, // 0.10Hz Bandwidth    23ƒÊA IDD
-	XL345_DATARATE_0_10_HZ = 0b0000 // 0.05Hz Bandwidth    23ƒÊA IDD (default value)
+	XL345_DATARATE_3200_HZ = 0b1111, // 1600Hz Bandwidth   140ï¿½ï¿½A IDD
+	XL345_DATARATE_1600_HZ = 0b1110, //  800Hz Bandwidth    90ï¿½ï¿½A IDD
+	XL345_DATARATE_800_HZ = 0b1101, //  400Hz Bandwidth   140ï¿½ï¿½A IDD
+	XL345_DATARATE_400_HZ = 0b1100, //  200Hz Bandwidth   140ï¿½ï¿½A IDD
+	XL345_DATARATE_200_HZ = 0b1011, //  100Hz Bandwidth   140ï¿½ï¿½A IDD
+	XL345_DATARATE_100_HZ = 0b1010, //   50Hz Bandwidth   140ï¿½ï¿½A IDD
+	XL345_DATARATE_50_HZ = 0b1001, //   25Hz Bandwidth    90ï¿½ï¿½A IDD
+	XL345_DATARATE_25_HZ = 0b1000, // 12.5Hz Bandwidth    60ï¿½ï¿½A IDD
+	XL345_DATARATE_12_5_HZ = 0b0111, // 6.25Hz Bandwidth    50ï¿½ï¿½A IDD
+	XL345_DATARATE_6_25HZ = 0b0110, // 3.13Hz Bandwidth    45ï¿½ï¿½A IDD
+	XL345_DATARATE_3_13_HZ = 0b0101, // 1.56Hz Bandwidth    40ï¿½ï¿½A IDD
+	XL345_DATARATE_1_56_HZ = 0b0100, // 0.78Hz Bandwidth    34ï¿½ï¿½A IDD
+	XL345_DATARATE_0_78_HZ = 0b0011, // 0.39Hz Bandwidth    23ï¿½ï¿½A IDD
+	XL345_DATARATE_0_39_HZ = 0b0010, // 0.20Hz Bandwidth    23ï¿½ï¿½A IDD
+	XL345_DATARATE_0_20_HZ = 0b0001, // 0.10Hz Bandwidth    23ï¿½ï¿½A IDD
+	XL345_DATARATE_0_10_HZ = 0b0000 // 0.05Hz Bandwidth    23ï¿½ï¿½A IDD (default value)
 } dataRate_t;
 
 /* Used with register 0x31 (ADXL345_REG_DATA_FORMAT) to set g range */
@@ -108,7 +110,7 @@ typedef enum
 
 /* Private function prototypes -----------------------------------------------*/
 
-void ADXL345_init(uint8_t*);
+bool ADXL345_init(void);
 void XL345_readXYZ(int8_t*);
 void ADXL345_SPI_Read(uint8_t*, uint8_t);
 void ADXL345_SPI_Write(uint8_t, uint8_t);

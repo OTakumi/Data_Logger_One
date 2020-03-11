@@ -7,11 +7,12 @@
 
 #include <main.h>
 #include <stm32l0xx.h>
+#include <stdbool.h>
 #include <adxl345.h>
 
 SPI_HandleTypeDef hspi1;
 
-void ADXL345_init(uint8_t *xl345_spi_error_flg)
+bool ADXL345_init(void)
 {
 	/*
 	 *  ADXL345 setting
@@ -34,11 +35,11 @@ void ADXL345_init(uint8_t *xl345_spi_error_flg)
 	uint8_t device_id = xl345_read_data[1];
 	if (device_id != XL345_I_M_DEVID)
 	{
-		*xl345_spi_error_flg = 1;
+		return false;
 	}
 	else
 	{
-		*xl345_spi_error_flg = 0;
+		return true;
 	}
 }
 

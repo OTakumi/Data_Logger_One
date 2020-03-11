@@ -85,8 +85,6 @@ void Led_Bring(int16_t);
 /* USER CODE BEGIN 0 */
 char MESSAGE[0xff] =
 { };
-uint8_t xl345_spi_error_flg = 0xff;
-uint8_t xl372_spi_error_flg = 0xff;
 
 /* USER CODE END 0 */
 
@@ -99,6 +97,9 @@ int main(void)
 	/* USER CODE BEGIN 1 */
 	uint16_t humid = 0;
 	float temp = 0.0;
+	bool xl345_device_info_is;
+	bool xl372_device_info_is;
+	bool mx25r_device_info_is;
 	int8_t xl345_xyz_data[3] = { };
 	int8_t xl372_xyz_data[3] = { };
 
@@ -148,11 +149,11 @@ int main(void)
 	else
 	{
 		// Startup_Message();
-		while (xl345_spi_error_flg != 0 || xl372_spi_error_flg != 0)
+		while (xl345_device_info_is || xl372_device_info_is || mx25r_device_info_is != true)
 		{
-			ADXL345_init(&xl345_spi_error_flg);
-			ADXL372_init(&xl372_spi_error_flg);
-			mx25r_device_id = MX25Rxx_ReadID();
+			xl345_device_info_is = ADXL345_init();
+			xl372_device_info_is = ADXL372_init();
+			mx25r_device_info_is = MX25Rxx_ReadID();
 		}
 		// If Mode_SW pushed, Start to get sensor data.
 		while(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 0)
@@ -162,12 +163,12 @@ int main(void)
 
 		while (1)
 		{
-			Get_Temp_Humid(&temp, &humid); // Get the temperature data and the humidity data
+			Get_Temp_Humid(&temp, &humid); 		// Get the temperature data and the humidity data
 
 			for (uint8_t i = 0; i <= 9; i++)
 			{
-				XL345_readXYZ(xl345_xyz_data); // Get the data stored in ADXL345 FIFO.
-				XL372_readXYZ(xl372_xyz_data); // Get the data stored in ADXL372 FIFO.
+				XL345_readXYZ(xl345_xyz_data); 	// Get the data stored in ADXL345 FIFO.
+				XL372_readXYZ(xl372_xyz_data); 	// Get the data stored in ADXL372 FIFO.
 
 				sprintf(MESSAGE, "%2d, %2d, %2d, ", xl345_xyz_data[0],
 						xl345_xyz_data[1], xl345_xyz_data[2]);

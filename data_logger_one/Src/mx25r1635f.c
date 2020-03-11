@@ -46,7 +46,7 @@ void MX25Rxx_WriteEnable(void)
 	MX25_CS_LOW();
 	MX25Rxx_Spi(0x06);
 	MX25_CS_HIGH();
-	MX25Rxx_Spi(1);
+	HAL_Delay(1);
 }
 
 //###################################################################################################################
@@ -97,8 +97,8 @@ void MX25Rxx_WaitForWriteEnd(void)
 void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t WriteAddr_inBytes)
 {
 	MX25Rxx_WaitForWriteEnd();
-	MX25Rxx_WriteEnable();
 	MX25_CS_LOW();
+	MX25Rxx_WriteEnable();
 	MX25Rxx_Spi(FLASH_CMD_PP);
 	MX25Rxx_Spi((WriteAddr_inBytes & 0xFF0000) >> 16);
 	MX25Rxx_Spi((WriteAddr_inBytes & 0xFF00) >> 8);

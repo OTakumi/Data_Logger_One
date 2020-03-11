@@ -93,10 +93,10 @@ void adxl372_settings(void)
 	ADXL372_SPI_Write(ADXL372_SELF_TEST << 1 & 0xfe, 0x01);
 	// Wait about 300 ms for self-test to complete
 	HAL_Delay(320);
-	uint8_t sefl_test_check[2] = { ADXL372_SELF_TEST << 1 | 0x01, };
-	ADXL372_SPI_Read(sefl_test_check, sizeof(sefl_test_check));
+	uint8_t self_test_check[4] = { ADXL372_SELF_TEST << 1 | 0x01, };
+	ADXL372_SPI_Read(self_test_check, sizeof(self_test_check));
 
-	if (sefl_test_check[1] == 0x06)
+	if (self_test_check[1] == 0x06)
 	{
 		Uart_Message("ADXL372 self test finished. \r\n");
 	}

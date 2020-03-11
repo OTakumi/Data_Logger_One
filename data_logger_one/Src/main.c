@@ -98,9 +98,9 @@ int main(void)
 	/* USER CODE BEGIN 1 */
 	uint16_t humid = 0;
 	float temp = 0.0;
-	bool xl345_device_info_is;
-	bool xl372_device_info_is;
-	bool mx25r_device_info_is;
+	bool xl345_device_info_is = 0;
+	bool xl372_device_info_is = 0;
+	bool mx25r_device_info_is = 0;
 	int8_t xl345_xyz_data[3] = { };
 	int8_t xl372_xyz_data[3] = { };
 	/* USER CODE END 1 */
@@ -148,11 +148,11 @@ int main(void)
 	else
 	{
 		// Startup_Message();
-		while (xl345_device_info_is || xl372_device_info_is || mx25r_device_info_is != true)
+		while (xl345_device_info_is != true || xl372_device_info_is != true || mx25r_device_info_is != true)
 		{
 			xl345_device_info_is = ADXL345_init();
 			xl372_device_info_is = ADXL372_init();
-			mx25r_device_info_is = MX25Rxx_ReadID();
+			mx25r_device_info_is = MX25Rxx_Init();
 		}
 		// If Mode_SW pushed, Start to get sensor data.
 		while(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 0)
@@ -208,7 +208,7 @@ int main(void)
 			MX25Rxx_WriteByte(mx25r_write_data, mx25r_write_addr);
 
 			uint8_t *mx25r_read_data = 0;
-			MX25Rxx_ReadByte(*mx25r_read_data, mx25r_write_addr);
+			MX25Rxx_ReadByte(&mx25r_read_data, mx25r_write_addr);
 
 			sprintf(MESSAGE, "FM %d \r\n", *mx25r_read_data);
 			Uart_Message(MESSAGE);

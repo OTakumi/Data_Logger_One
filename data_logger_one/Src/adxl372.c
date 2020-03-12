@@ -7,17 +7,18 @@
 
 #include <main.h>
 #include <stm32l0xx.h>
+#include <stdbool.h>
 #include <adxl372.h>
 
 SPI_HandleTypeDef hspi1;
 
 //###################################################################################################################
-void ADXL372_init(uint8_t *xl372_spi_error_flg)
+bool adxl372_init(uint8_t *xl372_spi_error_flg)
 {
 	uint8_t xl372_rx_data_buf[3] = { };
 
 	// setting the function
-	adxl372_settings();
+	adxl372_Settings();
 
 	// get power mode status
 	xl372_rx_data_buf[0] = ADXL372_POWER_CTL << 1 | 0x01;
@@ -30,17 +31,17 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	if (xl372_rx_data_buf[1] != ADXL372_PARTID_VAL)
 	{
 		// Uart_Message("ADXL372 SPI Error\r\n");
-		*xl372_spi_error_flg = 1;
+		return false;
 	}
 	else
 	{
 		// Uart_Message("ADXL372 SPI OK\r\n");
-		*xl372_spi_error_flg = 0;
+		return true;
 	}
 }
 
 //###################################################################################################################
-void adxl372_settings(void)
+void adxl372_Settings(void)
 {
 	// STANDBY mode
 	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
@@ -109,7 +110,7 @@ void adxl372_settings(void)
 }
 
 //###################################################################################################################
-void XL372_readXYZ(int8_t *xl372_data_buf)
+void adxl372_ReadXYZ(int8_t *xl372_data_buf)
 {
 	uint8_t check_status[2] = { ADXL372_STATUS_1 << 1 | 0x01, };
 	uint8_t xl372_xyz_data[7] =	{ };
@@ -143,7 +144,7 @@ void XL372_readXYZ(int8_t *xl372_data_buf)
 }
 
 //###################################################################################################################
-void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
+void adxl372_SPIRead(uint8_t *read_data_buf, uint8_t buf_size)
 {
 	ADXL372_CS_LOW();
 	HAL_Delay(5);
@@ -153,7 +154,7 @@ void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 }
 
 //###################################################################################################################
-void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
+void adxl372_SPIWrite(uint8_t addr, uint8_t data)
 {
 	uint8_t xl372_write_data_buf[2] =
 	{ };

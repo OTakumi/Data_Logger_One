@@ -25,7 +25,7 @@ typedef struct
 }mx25rxx_t;
 
 extern mx25rxx_t	mx25rxx;
-
+bool MX25Rxx_Init(void);
 uint8_t	MX25Rxx_Spi(uint8_t);
 uint32_t MX25Rxx_ReadID(void);
 void MX25Rxx_WriteEnable(void);

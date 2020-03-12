@@ -13,7 +13,7 @@
 SPI_HandleTypeDef hspi1;
 
 //###################################################################################################################
-bool adxl372_init(uint8_t *xl372_spi_error_flg)
+bool adxl372_init(void)
 {
 	uint8_t xl372_rx_data_buf[3] = { };
 
@@ -22,11 +22,11 @@ bool adxl372_init(uint8_t *xl372_spi_error_flg)
 
 	// get power mode status
 	xl372_rx_data_buf[0] = ADXL372_POWER_CTL << 1 | 0x01;
-	ADXL372_SPI_Read(xl372_rx_data_buf, sizeof(xl372_rx_data_buf));
+	adxl372_SPIRead(xl372_rx_data_buf, sizeof(xl372_rx_data_buf));
 
 	// get device id
 	xl372_rx_data_buf[0] = ADXL372_PARTID << 1 | 0x01;
-	ADXL372_SPI_Read(xl372_rx_data_buf, sizeof(xl372_rx_data_buf));
+	adxl372_SPIRead(xl372_rx_data_buf, sizeof(xl372_rx_data_buf));
 
 	if (xl372_rx_data_buf[1] != ADXL372_PARTID_VAL)
 	{
@@ -44,17 +44,17 @@ bool adxl372_init(uint8_t *xl372_spi_error_flg)
 void adxl372_Settings(void)
 {
 	// STANDBY mode
-	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
+	adxl372_SPIWrite(ADXL372_POWER_CTL << 1 & 0xfe,
 			ADXL372_POWER_CTL_MODE(ADXL372_STANDBY));
 
 	// Device Reset
-	ADXL372_SPI_Write(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);
+	adxl372_SPIWrite(ADXL372_RESET << 1 & 0xfe, ADXL372_RESET_CODE);
 	HAL_Delay(100);
 
 	// FIFO Setting
 	// FIFO_CTL_FORMAT_MODE = XYZ_FIFO
 	// FIFO_CTL_MODE_MODE = FIFO_STREAMED
-	ADXL372_SPI_Write(ADXL372_FIFO_CTL << 1 & 0xfe,
+	adxl372_SPIWrite(ADXL372_FIFO_CTL << 1 & 0xfe,
 			ADXL372_FIFO_CTL_FORMAT_MODE(ADXL372_XYZ_FIFO)
 					| ADXL372_FIFO_CTL_MODE_MODE(ADXL372_FIFO_STREAMED) | 0);
 
@@ -63,7 +63,7 @@ void adxl372_Settings(void)
 	// LINKLOOP_MODE(5:4bit) = default mode(0)
 	// LOW_NOISE_MODE(3bit) = Enable(1)
 	// BANDWIDTH_MODE(2:0bit) = 3200Hz(100)
-	ADXL372_SPI_Write(ADXL372_MEASURE << 1 & 0xfe,
+	adxl372_SPIWrite(ADXL372_MEASURE << 1 & 0xfe,
 			ADXL372_MEASURE_AUTOSLEEP_MODE(0)
 			| ADXL372_MEASURE_LINKLOOP_MODE(0)
 			| ADXL372_MEASURE_LOW_NOISE_MODE(1)
@@ -74,7 +74,7 @@ void adxl372_Settings(void)
 	// WAKE_UP_RATE_MODE(4:2bit) = 512ms(011)
 	// EXT_CLK_MODE(1bit) = Disable(0)
 	// EXT_SYNC_MODE(0bit) = Disable(0)
-	ADXL372_SPI_Write(ADXL372_TIMING << 1 & 0xfe,
+	adxl372_SPIWrite(ADXL372_TIMING << 1 & 0xfe,
 			ADXL372_TIMING_ODR_MODE(ADXL372_ODR_800HZ)
 					| ADXL372_TIMING_WAKE_UP_RATE_MODE(ADXL372_WUR_512ms)
 					| ADXL372_TIMING_EXT_CLK_MODE(0)
@@ -85,7 +85,7 @@ void adxl372_Settings(void)
 	// INSTANT_ON_TH_MODE(5bit) = low instant on threshold(0)
 	// FIL_SETTLE_MODE(4bit) = 370ms(0)
 	// POWER_CTL_MODE(1:0bit) = FULL_BW_MEASUREMENT(11)
-	ADXL372_SPI_Write(ADXL372_POWER_CTL << 1 & 0xfe,
+	adxl372_SPIWrite(ADXL372_POWER_CTL << 1 & 0xfe,
 			ADXL372_POWER_CTL_INSTANT_ON_TH_MODE(ADXL372_INSTANT_ON_LOW_TH)
 					| ADXL372_POWER_CTL_FIL_SETTLE_MODE(ADXL372_FILTER_SETTLE_370)
 					| ADXL372_POWER_CTL_LPF_DIS_MODE(1)
@@ -93,11 +93,11 @@ void adxl372_Settings(void)
 					| ADXL372_POWER_CTL_MODE(ADXL372_FULL_BW_MEASUREMENT));	// FULL_BW_MEASUREMENT mode
 
 	// Self test
-	ADXL372_SPI_Write(ADXL372_SELF_TEST << 1 & 0xfe, 0x01);
+	adxl372_SPIWrite(ADXL372_SELF_TEST << 1 & 0xfe, 0x01);
 	// Wait about 300 ms for self-test to complete
 	HAL_Delay(320);
 	uint8_t self_test_check[4] = { ADXL372_SELF_TEST << 1 | 0x01, };
-	ADXL372_SPI_Read(self_test_check, sizeof(self_test_check));
+	adxl372_SPIRead(self_test_check, sizeof(self_test_check));
 
 	if (self_test_check[1] == 0x06)
 	{
@@ -117,7 +117,7 @@ void adxl372_ReadXYZ(int8_t *xl372_data_buf)
 	uint8_t xyz_addrs[3] = { };
 	int16_t i16_xyz_data[3] = { };
 
-	ADXL372_SPI_Read(check_status, sizeof(check_status));
+	adxl372_SPIRead(check_status, sizeof(check_status));
 
 	xyz_addrs[0] = ADXL372_X_DATA_H << 1 | 0x01;
 	xyz_addrs[1] = ADXL372_Y_DATA_H << 1 | 0x01;
@@ -125,7 +125,7 @@ void adxl372_ReadXYZ(int8_t *xl372_data_buf)
 	for(int8_t i = 0; i < 3; i++)
 	{
 		xl372_xyz_data[0] = xyz_addrs[i];
-		ADXL372_SPI_Read(xl372_xyz_data, sizeof(xl372_xyz_data));
+		adxl372_SPIRead(xl372_xyz_data, sizeof(xl372_xyz_data));
 		i16_xyz_data[i] = ((int16_t) xl372_xyz_data[1] << 8) | (xl372_xyz_data[2]);
 	}
 
@@ -156,8 +156,7 @@ void adxl372_SPIRead(uint8_t *read_data_buf, uint8_t buf_size)
 //###################################################################################################################
 void adxl372_SPIWrite(uint8_t addr, uint8_t data)
 {
-	uint8_t xl372_write_data_buf[2] =
-	{ };
+	uint8_t xl372_write_data_buf[4] = { };
 	xl372_write_data_buf[0] = addr;
 	xl372_write_data_buf[1] = data;
 

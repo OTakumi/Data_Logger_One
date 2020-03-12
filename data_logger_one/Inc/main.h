@@ -54,7 +54,10 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void Startup_Message(void);
+void Uart_Message(char*);
+void Get_Temp_Humid(float*, uint16_t*);
+void Led_Bring(int16_t);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

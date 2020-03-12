@@ -420,10 +420,10 @@ struct adxl372_init_param {
 /******************************************************************************/
 /************************ Functions Declarations ******************************/
 /******************************************************************************/
-bool adxl372_init(uint8_t *);
+bool adxl372_init(void);
 void adxl372_Settings(void);
-void adzl372_ReadXYZ(int8_t *);
-void adxl372_SPI_Read(uint8_t *, uint8_t);
+void adxl372_ReadXYZ(int8_t *);
+void adxl372_SPIRead(uint8_t *, uint8_t);
 void adxl372_SPIWrite(uint8_t, uint8_t);
 
 #endif // ADXL372_H_

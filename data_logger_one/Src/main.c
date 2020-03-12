@@ -75,10 +75,6 @@ static void MX_USART1_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
-void Startup_Message(void);
-void Uart_Message(char*);
-void Get_Temp_Humid(float*, uint16_t*);
-void Led_Bring(int16_t);
 
 /* USER CODE END PFP */
 
@@ -151,7 +147,7 @@ int main(void)
 		while (xl345_device_info_is != true || xl372_device_info_is != true || mx25r_device_info_is != true)
 		{
 			xl345_device_info_is = ADXL345_init();
-			xl372_device_info_is = ADXL372_init();
+			xl372_device_info_is = adxl372_init();
 			mx25r_device_info_is = MX25Rxx_Init();
 		}
 		// If Mode_SW pushed, Start to get sensor data.
@@ -167,7 +163,7 @@ int main(void)
 			for (uint8_t i = 0; i <= 9; i++)
 			{
 				XL345_readXYZ(xl345_xyz_data); 	// Get the data stored in ADXL345 FIFO.
-				XL372_readXYZ(xl372_xyz_data); 	// Get the data stored in ADXL372 FIFO.
+				adxl372_ReadXYZ(xl372_xyz_data); 	// Get the data stored in ADXL372 FIFO.
 
 				sprintf(MESSAGE, "%2d, %2d, %2d, ", xl345_xyz_data[0],
 						xl345_xyz_data[1], xl345_xyz_data[2]);
@@ -205,12 +201,12 @@ int main(void)
 			*/
 			uint32_t mx25r_write_addr = 0x000000;
 			uint8_t mx25r_write_data = 0xaa;
-			MX25Rxx_WriteByte(mx25r_write_data, mx25r_write_addr);
+			// MX25Rxx_WriteByte(mx25r_write_data, mx25r_write_addr);
 
-			uint8_t *mx25r_read_data = 0;
-			MX25Rxx_ReadByte(&mx25r_read_data, mx25r_write_addr);
+			uint8_t mx25r_read_data = 0;
+			// MX25Rxx_ReadByte(&mx25r_read_data, mx25r_write_addr);
 
-			sprintf(MESSAGE, "FM %d \r\n", *mx25r_read_data);
+			sprintf(MESSAGE, "FM %d \r\n", mx25r_read_data);
 			Uart_Message(MESSAGE);
 
 			if(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)

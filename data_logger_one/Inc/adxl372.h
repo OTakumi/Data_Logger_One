@@ -430,16 +430,6 @@ int32_t adxl372_spi_reg_read_multiple(struct adxl372_dev *dev,
 int32_t adxl372_spi_reg_write(struct adxl372_dev *dev,
 			      uint8_t reg_addr,
 			      uint8_t reg_data);
-int32_t adxl372_i2c_reg_read(struct adxl372_dev *dev,
-			     uint8_t reg_addr,
-			     uint8_t *reg_data);
-int32_t adxl372_i2c_reg_write(struct adxl372_dev *dev,
-			      uint8_t reg_addr,
-			      uint8_t reg_data);
-int32_t adxl372_i2c_reg_read_multiple(struct adxl372_dev *dev,
-				      uint8_t reg_addr,
-				      uint8_t *reg_data,
-				      uint16_t count);
 int32_t adxl372_write_mask(struct adxl372_dev *dev,
 			   uint8_t reg_addr,
 			   uint32_t mask,

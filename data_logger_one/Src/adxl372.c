@@ -11,6 +11,7 @@
 
 SPI_HandleTypeDef hspi1;
 
+//###################################################################################################################
 void ADXL372_init(uint8_t *xl372_spi_error_flg)
 {
 	uint8_t xl372_rx_data_buf[3] = { };
@@ -38,6 +39,7 @@ void ADXL372_init(uint8_t *xl372_spi_error_flg)
 	}
 }
 
+//###################################################################################################################
 void adxl372_settings(void)
 {
 	// STANDBY mode
@@ -106,7 +108,7 @@ void adxl372_settings(void)
 	}
 }
 
-/*---------- Get ADXL372 Acceleration Data ---------- */
+//###################################################################################################################
 void XL372_readXYZ(int8_t *xl372_data_buf)
 {
 	uint8_t check_status[2] = { ADXL372_STATUS_1 << 1 | 0x01, };
@@ -140,6 +142,7 @@ void XL372_readXYZ(int8_t *xl372_data_buf)
 	xl372_data_buf[2] = i16_xyz_data[2] * 0.1;
 }
 
+//###################################################################################################################
 void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 {
 	ADXL372_CS_LOW();
@@ -149,6 +152,7 @@ void ADXL372_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 	ADXL372_CS_HIGH();
 }
 
+//###################################################################################################################
 void ADXL372_SPI_Write(uint8_t addr, uint8_t data)
 {
 	uint8_t xl372_write_data_buf[2] =

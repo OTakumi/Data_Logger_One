@@ -12,6 +12,7 @@
 
 SPI_HandleTypeDef hspi1;
 
+//###################################################################################################################
 bool ADXL345_init(void)
 {
 	/*
@@ -43,7 +44,7 @@ bool ADXL345_init(void)
 	}
 }
 
-/*---------- Get ADXL345 Acceleration Data ---------- */
+//###################################################################################################################
 void XL345_readXYZ(int8_t *xl345_data_buf)
 {
 	// Setting the data format
@@ -66,6 +67,7 @@ void XL345_readXYZ(int8_t *xl345_data_buf)
 	xl345_data_buf[2] = (float) xl345_xyz[2] * 0.0048;
 }
 
+//###################################################################################################################
 void ADXL345_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 {
 	XL345_CS_LOW();
@@ -75,6 +77,7 @@ void ADXL345_SPI_Read(uint8_t *read_data_buf, uint8_t buf_size)
 	XL345_CS_HIGH();
 }
 
+//###################################################################################################################
 void ADXL345_SPI_Write(uint8_t addr, uint8_t data)
 {
 	uint8_t xl345_write_data_buf[2] =

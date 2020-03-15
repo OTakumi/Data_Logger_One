@@ -44,36 +44,22 @@ uint32_t MX25Rxx_ReadID(void)
 void MX25Rxx_WriteEnable(void)
 {
 	MX25_CS_LOW();
-	MX25Rxx_Spi(0x06);
+	MX25Rxx_Spi(FLASH_CMD_WREN);
 	MX25_CS_HIGH();
 	HAL_Delay(1);
 }
 
 //###################################################################################################################
-uint8_t MX25Rxx_ReadStatusRegister(uint8_t SelectStatusRegister_1_2_3)
+uint8_t MX25Rxx_ReadStatusRegister(void)
 {
-	uint8_t status = 0;
+	uint8_t status[5] = { };
+	status[1] = MX25R_DUMMY_BYTE;
 	MX25_CS_LOW();
-	if (SelectStatusRegister_1_2_3 == 1)
-	{
-		MX25Rxx_Spi(0x05);
-		status = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
-		mx25rxx.StatusRegister1 = status;
-	}
-	else if (SelectStatusRegister_1_2_3 == 2)
-	{
-		MX25Rxx_Spi(0x35);
-		status = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
-		mx25rxx.StatusRegister2 = status;
-	}
-	else
-	{
-		MX25Rxx_Spi(0x15);
-		status = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
-		mx25rxx.StatusRegister3 = status;
-	}
+	status[0] = 0x05;
+	HAL_SPI_Receive(&hspi2, status, sizeof(status), 0xff);
+	mx25rxx.StatusRegister1 = status[1];
 	MX25_CS_HIGH();
-	return status;
+	return status[1];
 }
 
 //###################################################################################################################
@@ -82,7 +68,7 @@ void MX25Rxx_WaitForWriteEnd(void)
 	uint8_t status = 0;
 	HAL_Delay(1);
 	MX25_CS_LOW();
-	MX25Rxx_Spi(FLASH_CMD_WREN);
+	MX25Rxx_Spi(FLASH_CMD_RDSR);
 	do
 	{
 		status = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
@@ -94,30 +80,40 @@ void MX25Rxx_WaitForWriteEnd(void)
 }
 
 //###################################################################################################################
-void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t WriteAddr_inBytes)
+void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t Page_Address)
 {
-	MX25Rxx_WaitForWriteEnd();
-	MX25_CS_LOW();
-	MX25Rxx_WriteEnable();
-	MX25Rxx_Spi(FLASH_CMD_PP);
-	MX25Rxx_Spi((WriteAddr_inBytes & 0xFF0000) >> 16);
-	MX25Rxx_Spi((WriteAddr_inBytes & 0xFF00) >> 8);
-	MX25Rxx_Spi(WriteAddr_inBytes & 0xFF);
-	MX25Rxx_Spi(pBuffer);
-	MX25_CS_HIGH();
-	MX25Rxx_WaitForWriteEnd();
-}
+	/*
+	while (mx25rxx.Lock == 1)
+		HAL_Delay(1);
+	mx25rxx.Lock = 1;
+	*/
 
+	MX25Rxx_WriteEnable();
+	MX25Rxx_ReadStatusRegister();
+
+	MX25_CS_LOW();
+	MX25Rxx_Spi(FLASH_CMD_PP);
+	MX25Rxx_Spi((Page_Address & 0xFF0000) >> 16);
+	MX25Rxx_Spi((Page_Address & 0xFF00) >> 8);
+	MX25Rxx_Spi((Page_Address & 0xFF));
+
+	HAL_SPI_Transmit(&hspi2, &pBuffer, 1, 0xff);
+	MX25_CS_HIGH();
+
+	// MX25Rxx_WaitForWriteEnd();
+	HAL_Delay(1);
+	// mx25rxx.Lock = 0;
+}
 //###################################################################################################################
-void MX25Rxx_ReadByte(uint8_t *pBuffer, uint32_t Bytes_Address)
+void MX25Rxx_ReadByte(uint8_t* pBuffer, uint32_t Bytes_Address)
 {
 	MX25_CS_LOW();
 	MX25Rxx_Spi(FLASH_CMD_READ);
 	MX25Rxx_Spi((Bytes_Address & 0xFF0000) >> 16);
 	MX25Rxx_Spi((Bytes_Address & 0xFF00) >> 8);
 	MX25Rxx_Spi(Bytes_Address & 0xFF);
-	MX25Rxx_Spi(0);
-	*pBuffer = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
+	// MX25Rxx_Spi(0);
+	HAL_SPI_Receive(&hspi2, pBuffer, 2, 0xff);
 	MX25_CS_HIGH();
 }
 
@@ -125,21 +121,14 @@ void MX25Rxx_ReadByte(uint8_t *pBuffer, uint32_t Bytes_Address)
 bool MX25Rxx_Init(void)
 {
 	MX25_WP_HIGH();
+	MX25_CS_HIGH();
 	mx25rxx.Lock = 1;
 	while (HAL_GetTick() < 100)
 		HAL_Delay(1);
-	MX25_CS_HIGH();
 	HAL_Delay(100);
 
 	uint32_t id;
-#if (_mx25rXX_DEBUG==1)
-	Uart_Message("mx25rxx Init Begin...\r\n");
-#endif
 	id = MX25Rxx_ReadID();
-
-#if (_mx25rxx_DEBUG==1)
-	Uart_Message("mx25rxx ID:0x%X\r\n",id);
-#endif
 
 	mx25rxx.PageSize = 256;
 	mx25rxx.SectorSize = 0x1000;
@@ -148,19 +137,8 @@ bool MX25Rxx_Init(void)
 			/ mx25rxx.PageSize;
 	mx25rxx.BlockSize = mx25rxx.SectorSize * 16;
 	mx25rxx.CapacityInKiloByte = (mx25rxx.SectorCount * mx25rxx.SectorSize)	/ 1024;
-	MX25Rxx_ReadStatusRegister(1);
-	MX25Rxx_ReadStatusRegister(2);
-	MX25Rxx_ReadStatusRegister(3);
-#if (_mx25rxx_DEBUG==1)
-	Uart_Message("mx25rxx Page Size: %d Bytes\r\n",mx25rxx.PageSize);
-	Uart_Message("mx25rxx Page Count: %d\r\n",mx25rxx.PageCount);
-	Uart_Message("mx25rxx Sector Size: %d Bytes\r\n",mx25rxx.SectorSize);
-	Uart_Message("mx25rxx Sector Count: %d\r\n",mx25rxx.SectorCount);
-	Uart_Message("mx25rxx Block Size: %d Bytes\r\n",mx25rxx.BlockSize);
-	Uart_Message("mx25rxx Block Count: %d\r\n",mx25rxx.BlockCount);
-	Uart_Message("mx25rxx Capacity: %d KiloBytes\r\n",mx25rxx.CapacityInKiloByte);
-	Uart_Message("mx25rxx Init Done\r\n");
-#endif
+	MX25Rxx_ReadStatusRegister();
+
 	mx25rxx.Lock = 0;
 	if(id == 0xc22815)
 	{

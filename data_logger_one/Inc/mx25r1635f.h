@@ -18,13 +18,12 @@ typedef struct
 	uint32_t	BlockCount;
 	uint32_t	CapacityInKiloByte;
 	uint8_t		StatusRegister1;
-	uint8_t		StatusRegister2;
-	uint8_t		StatusRegister3;
 	uint8_t		Lock;
 
 }mx25rxx_t;
 
 extern mx25rxx_t	mx25rxx;
+
 bool MX25Rxx_Init(void);
 uint8_t	MX25Rxx_Spi(uint8_t);
 uint32_t MX25Rxx_ReadID(void);

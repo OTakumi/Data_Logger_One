@@ -119,18 +119,18 @@
 
 //READ comands
 #define FLASH_CMD_READ        0x03        // ***YYY READ (1 x I/O)
-#define FLASH_CMD_2READ       0xBB        // 2READ (2 x I/O)
-#define FLASH_CMD_4READ       0xEB        // 4READ (4 x I/O)
-#define FLASH_CMD_FASTREAD    0x0B        // FAST READ (Fast read data).
-#define FLASH_CMD_DREAD       0x3B        // DREAD (1In/2 Out fast read)
-#define FLASH_CMD_QREAD       0x6B        // QREAD (1In/4 Out fast read)
-#define FLASH_CMD_RDSFDP      0x5A        // RDSFDP (Read SFDP)
+// #define FLASH_CMD_2READ       0xBB        // 2READ (2 x I/O)
+// #define FLASH_CMD_4READ       0xEB        // 4READ (4 x I/O)
+// #define FLASH_CMD_FASTREAD    0x0B        // FAST READ (Fast read data).
+// #define FLASH_CMD_DREAD       0x3B        // DREAD (1In/2 Out fast read)
+// #define FLASH_CMD_QREAD       0x6B        // QREAD (1In/4 Out fast read)
+// #define FLASH_CMD_RDSFDP      0x5A        // RDSFDP (Read SFDP)
 
 //Program comands
 #define FLASH_CMD_WREN        0x06        // ***YYY WREN (Write Enable)
 #define FLASH_CMD_WRDI        0x04        // WRDI (Write Disable)
 #define FLASH_CMD_PP          0x02        // ***YYY PP (page program)
-#define FLASH_CMD_4PP         0x38        // 4PP (Quad page program)
+// #define FLASH_CMD_4PP         0x38        // 4PP (Quad page program)
 
 //Erase comands
 #define FLASH_CMD_SE          0x20        // ***YYY SE (Sector Erase)

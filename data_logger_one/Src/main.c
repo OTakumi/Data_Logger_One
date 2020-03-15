@@ -57,7 +57,7 @@ RTC_HandleTypeDef hrtc;
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
-TIM_HandleTypeDef htim6;
+// TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart1;
 
@@ -72,16 +72,15 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_RTC_Init(void);
-static void MX_TIM6_Init(void);
+// static void MX_RTC_Init(void);
+// static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-char MESSAGE[0xff] =
-{ };
+char MESSAGE[0xff] = { };
 
 /* USER CODE END 0 */
 
@@ -92,13 +91,7 @@ char MESSAGE[0xff] =
 int main(void)
 {
 	/* USER CODE BEGIN 1 */
-	uint16_t humid = 0;
-	float temp = 0.0;
-	bool xl345_device_info_is = 0;
-	bool xl372_device_info_is = 0;
-	bool mx25r_device_info_is = 0;
-	int8_t xl345_xyz_data[3] = { };
-	int8_t xl372_xyz_data[3] = { };
+
 	/* USER CODE END 1 */
 
 	/* MCU Configuration--------------------------------------------------------*/
@@ -123,10 +116,10 @@ int main(void)
 	MX_SPI1_Init();
 	MX_SPI2_Init();
 	MX_USART1_UART_Init();
-	MX_RTC_Init();
-	MX_TIM6_Init();
+	// MX_RTC_Init();
+	// MX_TIM6_Init();
 	/* USER CODE BEGIN 2 */
-	HAL_Delay(500);
+	HAL_Delay(200);
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -136,13 +129,22 @@ int main(void)
 	{
 		while (1)
 		{
+			// uint32_t flash_addr;
+			// flash_addr = 0x000000;
+			// uint8_t read_datas[240] = { };
+
 			Uart_Message("Data read Mode \r\n");
+			// MX25Rxx_ReadByte(read_datas, flash_addr);
 		}
 	}
 
 	// get sensor data mode
 	else
 	{
+		bool xl345_device_info_is = 0;
+		bool xl372_device_info_is = 0;
+		bool mx25r_device_info_is = 0;
+
 		// Startup_Message();
 		while (xl345_device_info_is != true || xl372_device_info_is != true || mx25r_device_info_is != true)
 		{
@@ -156,6 +158,17 @@ int main(void)
 			Led_Bring(10);
 		}
 
+		uint16_t humid = 0;
+		float temp = 0.0;
+		int8_t xl345_xyz_data[3] = { };
+		int8_t xl372_xyz_data[3] = { };
+		uint8_t sensor_datas[240] = { };
+		uint8_t numData = 0;
+
+		uint32_t flash_addr;
+		flash_addr = 0x000000;
+		uint8_t read_data[240] = { };
+
 		while (1)
 		{
 			Get_Temp_Humid(&temp, &humid); 		// Get the temperature data and the humidity data
@@ -165,12 +178,23 @@ int main(void)
 				XL345_readXYZ(xl345_xyz_data); 	// Get the data stored in ADXL345 FIFO.
 				adxl372_ReadXYZ(xl372_xyz_data); 	// Get the data stored in ADXL372 FIFO.
 
-				sprintf(MESSAGE, "%2d, %2d, %2d, ", xl345_xyz_data[0],
-						xl345_xyz_data[1], xl345_xyz_data[2]);
-				Uart_Message(MESSAGE);
-				HAL_Delay(10);
+				// sprintf(MESSAGE, "%2d, %2d, %2d, ", xl345_xyz_data[0],
+				//		xl345_xyz_data[1], xl345_xyz_data[2]);
+				// Uart_Message(MESSAGE);
+				// HAL_Delay(10);
 
-				//
+				sensor_datas[numData + 0] = (uint8_t)xl345_xyz_data[0];
+				sensor_datas[numData + 1] = (uint8_t)xl345_xyz_data[1];
+				sensor_datas[numData + 2] = (uint8_t)xl345_xyz_data[2];
+				sensor_datas[numData + 3] = (uint8_t)xl372_xyz_data[0];
+				sensor_datas[numData + 4] = (uint8_t)xl372_xyz_data[1];
+				sensor_datas[numData + 5] = (uint8_t)xl372_xyz_data[2];
+				sensor_datas[numData + 6] = (uint8_t)temp;
+				sensor_datas[numData + 7] = (uint8_t)humid;
+
+				numData += 8;
+
+				/*
 				if (i != 9)
 				{
 					sprintf(MESSAGE, "%2d, %2d, %2d \r\n", xl372_xyz_data[0],
@@ -184,30 +208,24 @@ int main(void)
 							xl372_xyz_data[2], temp, humid);
 					Uart_Message(MESSAGE);
 				}
+				*/
+
+				if(numData >= 240)
+				{
+					for (int a = 0; a <= numData; a++)
+					{
+						MX25Rxx_WriteByte(sensor_datas[a], flash_addr + a);
+
+						MX25Rxx_ReadByte(&read_data[a], flash_addr+a);
+						sprintf(MESSAGE, "%2d,", read_data[a]);
+						Uart_Message(MESSAGE);
+					}
+					numData = 0;
+				}
+				HAL_Delay(10);
 			}
 			Led_Bring(10);
 			// FlashMemory
-			/*
-			int8_t sensor_data[8] = {
-					xl345_xyz_data[0],
-					xl345_xyz_data[1],
-					xl345_xyz_data[2],
-					xl372_xyz_data[0],
-					xl372_xyz_data[1],
-					xl372_xyz_data[2],
-					temp,
-					humid
-			};
-			*/
-			uint32_t mx25r_write_addr = 0x000000;
-			uint8_t mx25r_write_data = 0xaa;
-			// MX25Rxx_WriteByte(mx25r_write_data, mx25r_write_addr);
-
-			uint8_t mx25r_read_data = 0;
-			// MX25Rxx_ReadByte(&mx25r_read_data, mx25r_write_addr);
-
-			sprintf(MESSAGE, "FM %d \r\n", mx25r_read_data);
-			Uart_Message(MESSAGE);
 
 			if(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)
 			{
@@ -323,35 +341,35 @@ static void MX_I2C1_Init(void)
  * @param None
  * @retval None
  */
-static void MX_RTC_Init(void)
-{
-
-	/* USER CODE BEGIN RTC_Init 0 */
-
-	/* USER CODE END RTC_Init 0 */
-
-	/* USER CODE BEGIN RTC_Init 1 */
-
-	/* USER CODE END RTC_Init 1 */
-	/** Initialize RTC Only
-	 */
-	hrtc.Instance = RTC;
-	hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-	hrtc.Init.AsynchPrediv = 127;
-	hrtc.Init.SynchPrediv = 255;
-	hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-	hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
-	hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-	hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-	if (HAL_RTC_Init(&hrtc) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN RTC_Init 2 */
-
-	/* USER CODE END RTC_Init 2 */
-
-}
+//static void MX_RTC_Init(void)
+//{
+//
+//	/* USER CODE BEGIN RTC_Init 0 */
+//
+//	/* USER CODE END RTC_Init 0 */
+//
+//	/* USER CODE BEGIN RTC_Init 1 */
+//
+//	/* USER CODE END RTC_Init 1 */
+//	/** Initialize RTC Only
+//	 */
+//	hrtc.Instance = RTC;
+//	hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+//	hrtc.Init.AsynchPrediv = 127;
+//	hrtc.Init.SynchPrediv = 255;
+//	hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+//	hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+//	hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+//	hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+//	if (HAL_RTC_Init(&hrtc) != HAL_OK)
+//	{
+//		Error_Handler();
+//	}
+//	/* USER CODE BEGIN RTC_Init 2 */
+//
+//	/* USER CODE END RTC_Init 2 */
+//
+//}
 
 /**
  * @brief SPI1 Initialization Function
@@ -434,39 +452,39 @@ static void MX_SPI2_Init(void)
  * @param None
  * @retval None
  */
-static void MX_TIM6_Init(void)
-{
-
-	/* USER CODE BEGIN TIM6_Init 0 */
-
-	/* USER CODE END TIM6_Init 0 */
-
-	TIM_MasterConfigTypeDef sMasterConfig =
-	{ 0 };
-
-	/* USER CODE BEGIN TIM6_Init 1 */
-
-	/* USER CODE END TIM6_Init 1 */
-	htim6.Instance = TIM6;
-	htim6.Init.Prescaler = 10000 - 1;
-	htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim6.Init.Period = 8000;
-	htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-	if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/* USER CODE BEGIN TIM6_Init 2 */
-
-	/* USER CODE END TIM6_Init 2 */
-
-}
+//static void MX_TIM6_Init(void)
+//{
+//
+//	/* USER CODE BEGIN TIM6_Init 0 */
+//
+//	/* USER CODE END TIM6_Init 0 */
+//
+//	TIM_MasterConfigTypeDef sMasterConfig =
+//	{ 0 };
+//
+//	/* USER CODE BEGIN TIM6_Init 1 */
+//
+//	/* USER CODE END TIM6_Init 1 */
+//	htim6.Instance = TIM6;
+//	htim6.Init.Prescaler = 10000 - 1;
+//	htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+//	htim6.Init.Period = 8000;
+//	htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+//	if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+//	{
+//		Error_Handler();
+//	}
+//	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+//	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+//	if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+//	{
+//		Error_Handler();
+//	}
+//	/* USER CODE BEGIN TIM6_Init 2 */
+//
+//	/* USER CODE END TIM6_Init 2 */
+//
+//}
 
 /**
  * @brief USART1 Initialization Function
@@ -565,15 +583,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/*---------- Startup message ---------- */
-void Startup_Message(void)
-{
-	char message[] = "Start Data logging\r\n";
-	Uart_Message(message);
-}
-
-
-
 /*---------- Get Temperature and Humidity ---------- */
 void Get_Temp_Humid(float *temp, uint16_t *humid)
 {

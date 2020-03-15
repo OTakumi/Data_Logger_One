@@ -62,9 +62,9 @@ void XL345_readXYZ(int8_t *xl345_data_buf)
 	xl345_xyz[1] = ((int16_t) xl345_accel_data[4] << 8) + xl345_accel_data[3];
 	xl345_xyz[2] = ((int16_t) xl345_accel_data[6] << 8) + xl345_accel_data[5];
 
-	xl345_data_buf[0] = (float) xl345_xyz[0] * 0.0048;
-	xl345_data_buf[1] = (float) xl345_xyz[1] * 0.0048;
-	xl345_data_buf[2] = (float) xl345_xyz[2] * 0.0048;
+	xl345_data_buf[0] = (float) xl345_xyz[0] * 0.0039;
+	xl345_data_buf[1] = (float) xl345_xyz[1] * 0.0039;
+	xl345_data_buf[2] = (float) xl345_xyz[2] * 0.0039;
 }
 
 //###################################################################################################################

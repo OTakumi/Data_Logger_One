@@ -101,11 +101,11 @@ void adxl372_Settings(void)
 
 	if (self_test_check[1] == 0x06)
 	{
-		Uart_Message("ADXL372 self test finished. \r\n");
+		// Uart_Message("ADXL372 self test finished. \r\n");
 	}
 	else
 	{
-		Uart_Message("ADXL372 self test is failed. \r\n");
+		// Uart_Message("ADXL372 self test is failed. \r\n");
 	}
 }
 

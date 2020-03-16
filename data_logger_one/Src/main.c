@@ -146,8 +146,13 @@ int main(void)
 			for (int x = 0; x <= 0xf8; x++)
 			{
 				MX25Rxx_ReadByte(&read_data[x], read_addr + x);
-				sprintf(MESSAGE, "%2d,", read_data[x]);
+				sprintf(MESSAGE, "%2d,", (int8_t)read_data[x]);
 				Uart_Message(MESSAGE);
+
+				if((x + 1) % 8 == 0)
+					Uart_Message("\r\n");
+				else
+					Uart_Message(",");
 
 				// MX25Rxx_ReadByte(read_datas, flash_addr);
 			}

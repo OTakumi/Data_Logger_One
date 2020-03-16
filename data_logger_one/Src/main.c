@@ -143,20 +143,20 @@ int main(void)
 		uint8_t read_data[0xf9] = { };
 		while (read_addr <= 0x1fffff)
 		{
-			for (int x = 0; x <= 0xf7; x++)
-			{
-				MX25Rxx_ReadByte(&read_data[x], read_addr + x);
-				sprintf(MESSAGE, "%4d", (int8_t)read_data[x]);
-				Uart_Message(MESSAGE);
-
-				if((x + 1) % 8 == 0)
-					Uart_Message("\r\n");
-				else
-					Uart_Message(",");
-
-				// MX25Rxx_ReadByte(read_datas, flash_addr);
-			}
-			read_addr = read_addr + 0x001000;
+//			for (int x = 0; x <= 0xf7; x++)
+//			{
+//				MX25Rxx_ReadByte(&read_data[x], read_addr + x);
+//				sprintf(MESSAGE, "%4d", (int8_t)read_data[x]);
+//				Uart_Message(MESSAGE);
+//
+//				if((x + 1) % 8 == 0)
+//					Uart_Message("\r\n");
+//				else
+//					Uart_Message(",");
+//
+//				// MX25Rxx_ReadByte(read_datas, flash_addr);
+//			}
+//			read_addr = read_addr + 0x001000;
 		}
 	}
 
@@ -173,7 +173,7 @@ int main(void)
 		float temp = 0.0;
 		int8_t xl345_xyz_data[3] = { };
 		int8_t xl372_xyz_data[3] = { };
-		uint8_t sensor_datas[240] = { };
+		uint8_t sensor_datas[0xf8] = { };
 		uint8_t numData = 0;
 
 		uint32_t flash_write_addr = 0x000000;
@@ -219,22 +219,37 @@ int main(void)
 				}
 				*/
 
-				uint8_t addr1 = 0, addr2 = 0, addr3 = 0;
-				if(numData >= 0xf7)
+//				uint8_t addr1 = 0, addr2 = 0, addr3 = 0;
+				uint8_t read_data[0xf7] = { };
+				if (numData >= 0xf8)
 				{
-					for (int a = 0; a <= numData; a++)
+					MX25Rxx_EraseSector(flash_write_addr);
+//					HAL_Delay(1000);
+//					for (int a = 0; a <= numData; a++)
+//					{
+//						MX25Rxx_ReadByte(read_data, flash_write_addr);
+					MX25Rxx_WriteByte(sensor_datas, flash_write_addr);
+//						addr1 = ((flash_write_addr + a) & 0xFF0000) >> 16;
+//						addr2 = ((flash_write_addr + a) & 0xFF00) >> 8;
+//						addr3 = (flash_write_addr + a)  & 0xFF;
+//						sprintf(MESSAGE, "%2x %2x %2x\r\n", addr1, addr2, addr3);
+//						Uart_Message(MESSAGE);
+
+					MX25Rxx_ReadByte(read_data, flash_write_addr);
+					for (int a = 0; a < numData; a++)
 					{
-						MX25Rxx_WriteByte(sensor_datas[a], flash_write_addr + a);
-						addr1 = ((flash_write_addr + a) & 0xFF0000) >> 16;
-						addr2 = ((flash_write_addr + a) & 0xFF00) >> 8;
-						addr3 = (flash_write_addr + a)  & 0xFF;
-						sprintf(MESSAGE, "%2x %2x %2x\r\n", addr1, addr2, addr3);
+						sprintf(MESSAGE, "%4d", (int8_t) read_data[a]);
 						Uart_Message(MESSAGE);
+
+						if ((a + 1) % 8 == 0)
+							Uart_Message("\r\n");
+						else
+							Uart_Message(",");
 					}
+//					}
 					numData = 0;
 					flash_write_addr = flash_write_addr + 0x001000;
 				}
-				HAL_Delay(10);
 			}
 			Led_Bring(10);
 			// FlashMemory

@@ -80,16 +80,20 @@ void MX25Rxx_WaitForWriteEnd(void)
 }
 
 //###################################################################################################################
-void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t Page_Address)
+void MX25Rxx_WriteByte(uint8_t* pBuffer, uint32_t Page_Address)
 {
-	/*
-	while (mx25rxx.Lock == 1)
-		HAL_Delay(1);
+	uint8_t status = 0;
+
+//	while (mx25rxx.Lock == 1)
+//		HAL_Delay(1);
 	mx25rxx.Lock = 1;
-	*/
 
 	MX25Rxx_WriteEnable();
-	MX25Rxx_ReadStatusRegister();
+	while(status != 0x02)
+	{
+		status = MX25Rxx_ReadStatusRegister();
+		HAL_Delay(1);
+	}
 
 	MX25_CS_LOW();
 	MX25Rxx_Spi(FLASH_CMD_PP);
@@ -97,26 +101,68 @@ void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t Page_Address)
 	MX25Rxx_Spi((Page_Address & 0xFF00) >> 8);
 	MX25Rxx_Spi((Page_Address & 0xFF));
 
-	HAL_SPI_Transmit(&hspi2, &pBuffer, 1, 0xff);
-	MX25_CS_HIGH();
+	HAL_SPI_Transmit(&hspi2, pBuffer, 0xf7, 0xff);
 
-	// MX25Rxx_WaitForWriteEnd();
-	HAL_Delay(20);
-	// mx25rxx.Lock = 0;
+	while(status != 0x00)
+	{
+		status = MX25Rxx_ReadStatusRegister();
+		HAL_Delay(1);
+	}
+//	MX25Rxx_WaitForWriteEnd();
+//	HAL_Delay(20);
+	MX25_CS_HIGH();
+	mx25rxx.Lock = 0;
 }
 //###################################################################################################################
 void MX25Rxx_ReadByte(uint8_t* pBuffer, uint32_t Bytes_Address)
 {
+//	while (mx25rxx.Lock == 1)
+//		HAL_Delay(1);
+	mx25rxx.Lock = 1;
+
 	MX25_CS_LOW();
 	MX25Rxx_Spi(FLASH_CMD_READ);
 	MX25Rxx_Spi((Bytes_Address & 0xFF0000) >> 16);
 	MX25Rxx_Spi((Bytes_Address & 0xFF00) >> 8);
 	MX25Rxx_Spi(Bytes_Address & 0xFF);
 	// MX25Rxx_Spi(0);
-	HAL_SPI_Receive(&hspi2, pBuffer, 2, 0xff);
+	HAL_SPI_Receive(&hspi2, pBuffer, 0xf7, 0xff);
 	MX25_CS_HIGH();
+
+	mx25rxx.Lock = 0;
 }
 
+//###################################################################################################################
+void MX25Rxx_EraseSector(uint32_t SectorAddr)
+{
+	uint8_t status = 0;
+
+//	while (mx25rxx.Lock == 1)
+//		HAL_Delay(1);
+//	mx25rxx.Lock = 1;
+
+	MX25Rxx_WriteEnable();
+	while(status != 0x02)
+	{
+		status = MX25Rxx_ReadStatusRegister();
+		HAL_Delay(1);
+	}
+
+	MX25_CS_LOW();
+	MX25Rxx_Spi(FLASH_CMD_SE);
+	MX25Rxx_Spi((SectorAddr & 0xFF0000) >> 16);
+	MX25Rxx_Spi((SectorAddr & 0xFF00) >> 8);
+	MX25Rxx_Spi(SectorAddr & 0xFF);
+	MX25_CS_HIGH();
+
+	while(status != 0x00)
+	{
+		status = MX25Rxx_ReadStatusRegister();
+		HAL_Delay(1);
+	}
+
+	mx25rxx.Lock = 0;
+}
 //###################################################################################################################
 bool MX25Rxx_Init(void)
 {

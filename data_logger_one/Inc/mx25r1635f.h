@@ -29,7 +29,8 @@ uint8_t	MX25Rxx_Spi(uint8_t);
 uint32_t MX25Rxx_ReadID(void);
 void MX25Rxx_WriteEnable(void);
 void MX25Rxx_WaitForWriteEnd(void);
-void MX25Rxx_WriteByte(uint8_t, uint32_t);
+void MX25Rxx_WriteByte(uint8_t*, uint32_t);
 void MX25Rxx_ReadByte(uint8_t*, uint32_t);
+void MX25Rxx_EraseSector(uint32_t);
 
 #endif /* MX25R1635R_H_ */

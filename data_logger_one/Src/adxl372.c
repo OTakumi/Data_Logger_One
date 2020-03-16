@@ -129,15 +129,6 @@ void adxl372_ReadXYZ(int8_t *xl372_data_buf)
 		i16_xyz_data[i] = ((int16_t) xl372_xyz_data[1] << 8) | (xl372_xyz_data[2]);
 	}
 
-	/*
-	i16_xyz_data[0] = ((int16_t) xl372_xyz_data[1] << 8)
-			| (xl372_xyz_data[2]);
-	i16_xyz_data[1] = ((int16_t) xl372_xyz_data[3] << 8)
-			| (xl372_xyz_data[4]);
-	i16_xyz_data[2] = ((int16_t) xl372_xyz_data[5] << 8)
-			| (xl372_xyz_data[6]);
-	*/
-
 	xl372_data_buf[0] = i16_xyz_data[0] * 0.1;
 	xl372_data_buf[1] = i16_xyz_data[1] * 0.1;
 	xl372_data_buf[2] = i16_xyz_data[2] * 0.1;

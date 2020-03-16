@@ -62,22 +62,22 @@ uint8_t MX25Rxx_ReadStatusRegister(void)
 	return status[1];
 }
 
-//###################################################################################################################
-void MX25Rxx_WaitForWriteEnd(void)
-{
-	uint8_t status = 0;
-	HAL_Delay(1);
-	MX25_CS_LOW();
-	MX25Rxx_Spi(FLASH_CMD_RDSR);
-	do
-	{
-		status = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
-		mx25rxx.StatusRegister1 = status;
-		HAL_Delay(1);
-	}
-	while ((mx25rxx.StatusRegister1 & 0x01) == 0x01);
-	MX25_CS_HIGH();
-}
+////###################################################################################################################
+//void MX25Rxx_WaitForWriteEnd(void)
+//{
+//	uint8_t status = 0;
+//	HAL_Delay(1);
+//	MX25_CS_LOW();
+//	MX25Rxx_Spi(FLASH_CMD_RDSR);
+//	do
+//	{
+//		status = MX25Rxx_Spi(MX25R_DUMMY_BYTE);
+//		mx25rxx.StatusRegister1 = status;
+//		HAL_Delay(1);
+//	}
+//	while ((mx25rxx.StatusRegister1 & 0x01) == 0x01);
+//	MX25_CS_HIGH();
+//}
 
 //###################################################################################################################
 void MX25Rxx_WriteByte(uint8_t* pBuffer, uint32_t Page_Address)
@@ -101,7 +101,7 @@ void MX25Rxx_WriteByte(uint8_t* pBuffer, uint32_t Page_Address)
 	MX25Rxx_Spi((Page_Address & 0xFF00) >> 8);
 	MX25Rxx_Spi((Page_Address & 0xFF));
 
-	HAL_SPI_Transmit(&hspi2, pBuffer, 0xf7, 0xff);
+	HAL_SPI_Transmit(&hspi2, pBuffer, 0xf9, 0xff);
 
 	while(status != 0x00)
 	{
@@ -126,7 +126,7 @@ void MX25Rxx_ReadByte(uint8_t* pBuffer, uint32_t Bytes_Address)
 	MX25Rxx_Spi((Bytes_Address & 0xFF00) >> 8);
 	MX25Rxx_Spi(Bytes_Address & 0xFF);
 	// MX25Rxx_Spi(0);
-	HAL_SPI_Receive(&hspi2, pBuffer, 0xf7, 0xff);
+	HAL_SPI_Receive(&hspi2, pBuffer, 0xf9, 0xff);
 	MX25_CS_HIGH();
 
 	mx25rxx.Lock = 0;
@@ -168,10 +168,10 @@ bool MX25Rxx_Init(void)
 {
 	MX25_WP_HIGH();
 	MX25_CS_HIGH();
-	mx25rxx.Lock = 1;
-	while (HAL_GetTick() < 100)
-		HAL_Delay(1);
-	HAL_Delay(100);
+//	mx25rxx.Lock = 1;
+//	while (HAL_GetTick() < 100)
+//		HAL_Delay(1);
+//	HAL_Delay(100);
 
 	uint32_t id;
 	id = MX25Rxx_ReadID();

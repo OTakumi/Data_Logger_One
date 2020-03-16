@@ -27,7 +27,7 @@ extern mx25rxx_t	mx25rxx;
 bool MX25Rxx_Init(void);
 uint8_t	MX25Rxx_Spi(uint8_t);
 uint32_t MX25Rxx_ReadID(void);
-void MX25Rxx_WriteEnable(void);
+//void MX25Rxx_WriteEnable(void);
 void MX25Rxx_WaitForWriteEnd(void);
 void MX25Rxx_WriteByte(uint8_t*, uint32_t);
 void MX25Rxx_ReadByte(uint8_t*, uint32_t);

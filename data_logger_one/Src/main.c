@@ -139,14 +139,19 @@ int main(void)
 	// read memory data mode
 	if (HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)
 	{
+		uint32_t read_addr = 0x000000;
+		uint8_t read_data[0xf9] = { };
 		while (1)
 		{
-			// uint32_t flash_addr;
-			// flash_addr = 0x000000;
-			// uint8_t read_datas[240] = { };
+			for (int x = 0; x <= 0xf8; x++)
+			{
+				MX25Rxx_ReadByte(&read_data[x], read_addr + x);
+				sprintf(MESSAGE, "%2d,", read_data[x]);
+				Uart_Message(MESSAGE);
 
-			Uart_Message("Data read Mode \r\n");
-			// MX25Rxx_ReadByte(read_datas, flash_addr);
+				// MX25Rxx_ReadByte(read_datas, flash_addr);
+			}
+			read_addr = read_addr + 0x001000;
 		}
 	}
 
@@ -166,9 +171,7 @@ int main(void)
 		uint8_t sensor_datas[240] = { };
 		uint8_t numData = 0;
 
-		uint32_t flash_addr;
-		flash_addr = 0x000000;
-		uint8_t read_data[240] = { };
+		uint32_t flash_write_addr = 0x000000;
 
 		while (1)
 		{
@@ -211,17 +214,20 @@ int main(void)
 				}
 				*/
 
-				if(numData >= 240)
+				uint8_t addr1 = 0, addr2 = 0, addr3 = 0;
+				if(numData >= 0xf8)
 				{
 					for (int a = 0; a <= numData; a++)
 					{
-						MX25Rxx_WriteByte(sensor_datas[a], flash_addr + a);
-
-						MX25Rxx_ReadByte(&read_data[a], flash_addr+a);
-						sprintf(MESSAGE, "%2d,", read_data[a]);
+						MX25Rxx_WriteByte(sensor_datas[a], flash_write_addr + a);
+						addr1 = ((flash_write_addr + a) & 0xFF0000) >> 16;
+						addr2 = ((flash_write_addr + a) & 0xFF00) >> 8;
+						addr3 = (flash_write_addr + a)  & 0xFF;
+						sprintf(MESSAGE, "%2x%2x%2x\r\n", addr1, addr2, addr3);
 						Uart_Message(MESSAGE);
 					}
 					numData = 0;
+					flash_write_addr = flash_write_addr + 0x001000;
 				}
 				HAL_Delay(10);
 			}

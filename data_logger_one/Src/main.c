@@ -124,6 +124,18 @@ int main(void)
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
+	bool xl345_device_info_is = 0;
+	bool xl372_device_info_is = 0;
+	bool mx25r_device_info_is = 0;
+
+	// Startup_Message();
+	while (xl345_device_info_is != true || xl372_device_info_is != true || mx25r_device_info_is != true)
+	{
+		xl345_device_info_is = ADXL345_init();
+		xl372_device_info_is = adxl372_init();
+		mx25r_device_info_is = MX25Rxx_Init();
+	}
+
 	// read memory data mode
 	if (HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) != 0)
 	{
@@ -141,17 +153,6 @@ int main(void)
 	// get sensor data mode
 	else
 	{
-		bool xl345_device_info_is = 0;
-		bool xl372_device_info_is = 0;
-		bool mx25r_device_info_is = 0;
-
-		// Startup_Message();
-		while (xl345_device_info_is != true || xl372_device_info_is != true || mx25r_device_info_is != true)
-		{
-			xl345_device_info_is = ADXL345_init();
-			xl372_device_info_is = adxl372_init();
-			mx25r_device_info_is = MX25Rxx_Init();
-		}
 		// If Mode_SW pushed, Start to get sensor data.
 		while(HAL_GPIO_ReadPin(GPIOB, Mode_SW_Pin) == 0)
 		{

@@ -52,7 +52,7 @@ void MX25Rxx_WriteEnable(void)
 //###################################################################################################################
 uint8_t MX25Rxx_ReadStatusRegister(void)
 {
-	uint8_t status[5] = { };
+	uint8_t status[2] = { };
 	status[1] = MX25R_DUMMY_BYTE;
 	MX25_CS_LOW();
 	status[0] = 0x05;
@@ -101,7 +101,7 @@ void MX25Rxx_WriteByte(uint8_t pBuffer, uint32_t Page_Address)
 	MX25_CS_HIGH();
 
 	// MX25Rxx_WaitForWriteEnd();
-	HAL_Delay(1);
+	HAL_Delay(20);
 	// mx25rxx.Lock = 0;
 }
 //###################################################################################################################

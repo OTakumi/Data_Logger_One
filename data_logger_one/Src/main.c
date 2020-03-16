@@ -141,12 +141,12 @@ int main(void)
 	{
 		uint32_t read_addr = 0x000000;
 		uint8_t read_data[0xf9] = { };
-		while (1)
+		while (read_addr <= 0x1fffff)
 		{
-			for (int x = 0; x <= 0xf8; x++)
+			for (int x = 0; x <= 0xf7; x++)
 			{
 				MX25Rxx_ReadByte(&read_data[x], read_addr + x);
-				sprintf(MESSAGE, "%2d,", (int8_t)read_data[x]);
+				sprintf(MESSAGE, "%4d", (int8_t)read_data[x]);
 				Uart_Message(MESSAGE);
 
 				if((x + 1) % 8 == 0)
@@ -220,7 +220,7 @@ int main(void)
 				*/
 
 				uint8_t addr1 = 0, addr2 = 0, addr3 = 0;
-				if(numData >= 0xf8)
+				if(numData >= 0xf7)
 				{
 					for (int a = 0; a <= numData; a++)
 					{
@@ -228,7 +228,7 @@ int main(void)
 						addr1 = ((flash_write_addr + a) & 0xFF0000) >> 16;
 						addr2 = ((flash_write_addr + a) & 0xFF00) >> 8;
 						addr3 = (flash_write_addr + a)  & 0xFF;
-						sprintf(MESSAGE, "%2x%2x%2x\r\n", addr1, addr2, addr3);
+						sprintf(MESSAGE, "%2x %2x %2x\r\n", addr1, addr2, addr3);
 						Uart_Message(MESSAGE);
 					}
 					numData = 0;
